@@ -1,0 +1,430 @@
+---
+title: "ELSA voting patterns study"
+subtitle: Exploratory analysis  - draft version 1
+author: "Pierre Walthéry"
+date: today
+date-format: DD MMMM YYYY
+format: html
+editor: source
+execute:
+  warning: false
+  message: false
+  echo: false
+  cache: false
+---
+
+# Introduction
+This document presents frequency and contingency tables for a series of variables
+from the English Longitudinal Study of Ageing - ELSA Wave 10.
+
+The table below presents a list of all variables taken into account. 
+Recoding suggestion are also described below for discussion but haven't been implemented at this stage.
+
+Results are presented as follows, under each tab below:
+
+- Weighted frequencies and proportions of the original variables
+- Weighted frequencies and proportions of the recoded (ie missing/invalid values removed) variables
+- Contingency table of the variable with votring behaviour at Wave 10
+- Chi-Squared test of independence.
+
+```{r data}
+
+rm(list=ls())
+
+ 
+
+ivs<-c("indsex","tenureb", "dimarr","hhdtypb","w10nssec5","wpdes", "edqual", "ethnic", "scorgrl",  "hehelf","cfmap", "cfmetm","VotGE1","VotGE3","VotGE8","VotGE9", "headlba", "headlbe","iafcon", "exrela","iafind", "pscedd", "pscede", "spcar", "sptraa", "splift", "hobb","erfvol","scorgpo")
+
+
+library(haven)
+library(survey)
+library(dplyr)
+library(knitr)
+# datadir<-"~/Data/elsa/UKDA-5050-stata/stata/stata13_se/"
+# elsa0<-read_dta(paste0(datadir,"wave_0_common_variables_v2.dta"))
+# elsa.ifs<-read_dta(paste0(datadir,"wave_10_ifs_derived_variables.dta"))
+# elsa<-read_dta(paste0(datadir,"wave_10_elsa_data_eul_v4.dta"))
+# elsa1<-read_dta(paste0(datadir,"wave_1_core_data_v3.dta"))
+# elsa3<-read_dta(paste0(datadir,"wave_3_elsa_data_v4.dta"))
+# elsa8<-read_dta(paste0(datadir,"wave_8_elsa_data_eul_v2.dta"))
+# elsa9<-read_dta(paste0(datadir,"wave_9_elsa_data_eul_v2.dta"))
+# 
+# elsa<-merge(elsa,elsa0|>
+#                  select(idauniq,hhdtypb,tenureb,ethnic),
+#                  by="idauniq",all.x=T,all.Y=F)
+# elsa<-merge(elsa,elsa.ifs|>
+#                  select(idauniq,edqual),
+#                  by="idauniq",all.x=T,all.Y=F)
+# 
+# ### Voting
+# vot1389<-merge(
+#      merge(elsa1 |> select(idauniq,scptpa1),
+#            elsa3 |> select(idauniq,scpt01),
+#                  by="idauniq",all=T
+#            ),
+#       merge(elsa8 |> select(idauniq,scptrvt),
+#             elsa9 |> select(idauniq,scptrvt),
+#                  by="idauniq",all=T
+#            ),
+#            by="idauniq",all=T)
+# 
+# names(vot1389)[which(names(vot1389)=="scptpa1")]<-"VotGE1"
+# names(vot1389)[which(names(vot1389)=="scpt01")]<-"VotGE3"
+# names(vot1389)[which(names(vot1389)=="scptrvt.x")]<-"VotGE8"
+# names(vot1389)[which(names(vot1389)=="scptrvt.y")]<-"VotGE9"
+# 
+# elsa<-merge(elsa, vot1389,
+#              by="idauniq",all=T
+#            )
+# 
+# 
+# elsaw<-elsa|>filter(!is.na(w10xwgt)) |>
+#            select(idauniq,ivs,exlo80, psagf, exrslf, indager, scsptrvt,w10xwgt)
+# 
+# write_dta(elsaw, "/tmp/elsaw.dta")
+
+elsaw<-read_dta("/tmp/elsaw.dta")
+
+###############################################################################################################
+```
+
+```{r functions}
+tfactor<-function(v){
+  droplevels(as_factor(v,"both"))
+}
+
+lookfor<-function(name,dset){
+grep(name,names(dset),value=T)  
+}
+
+colPct<-function(tab){
+round(
+100*prop.table(tab,1),
+1
+)
+}
+
+rowPct<-function(tab){
+round(
+100*prop.table(tab,2),
+2  
+)
+}
+  uniPct<-function(tab){
+round(
+100*prop.table(tab),
+2  
+)
+}
+
+# Get weighted frequency tables
+wfreq <- function(var) {
+  # Create frequency table
+  freq_table <- svytable(as.formula(paste0("~", var,".f")), design = elsaw.s)
+  
+  # Calculate percentages
+  percents <- uniPct(freq_table)
+  
+  # Create a data frame with Label, Frequency, and Percentage (rounded to 1 digit)
+  result <- data.frame(
+    Label = names(freq_table),
+    Freq = round(as.vector(freq_table), 1),
+    Pct = round(as.vector(percents), 1)
+  )
+  names(result)[1]<-attr(eval(parse(text=paste0("elsaw$",var))),"label")
+  # Return the result
+  return(result)
+}
+
+wfreq.r <- function(var) {
+  # Create frequency table
+  freq_table <- svytable(as.formula(paste0("~", var,".fr")), design = elsaw.s)
+  
+  # Calculate percentages
+  percents <- uniPct(freq_table)
+  
+  # Create a data frame with Label, Frequency, and Percentage (rounded to 1 digit)
+  result <- data.frame(
+    Label = names(freq_table),
+    Freq = round(as.vector(freq_table), 1),
+    Pct = round(as.vector(percents), 1)
+  )
+  names(result)[1]<-attr(eval(parse(text=paste0("elsaw$",var))),"label")
+  # Return the result
+  return(result)
+}
+
+
+
+############################################################################################
+## Variable search
+
+# vlab.m<-""
+# for (vr in names(elsaw)) {
+# vlab.m<-c(vlab.m,paste(vr,attr(elsaw[[vr]],"label"),sep="----"))
+# }
+# 
+# vlab0<-""
+# for (vr in names(elsa0)) {
+# vlab0<-c(vlab0,paste(vr,attr(elsa0[[vr]],"label"),sep="----"))
+# }
+# 
+# vlab.e1<-""
+# for (vr in names(elsa1)) {
+# vlab.e1<-c(vlab.e1,paste(vr,attr(elsa1[[vr]],"label"),sep="----"))
+# }
+# 
+# vlab.e3<-""
+# for (vr in names(elsa3)) {
+# vlab.e3<-c(vlab.e3,paste(vr,attr(elsa3[[vr]],"label"),sep="----"))
+# }
+# 
+# vlab.e8<-""
+# for (vr in names(elsa8)) {
+# vlab.e8<-c(vlab.e8,paste(vr,attr(elsa8[[vr]],"label"),sep="----"))
+# }
+# 
+# 
+# res.voted1<-grep("voted",vlab.e1,fixed=TRUE,value=T)
+# res.voted3<-grep("voted",vlab.e3,fixed=TRUE,value=T)
+# res.voted8<-grep("voted",vlab.e8,fixed=TRUE,value=T)
+# 
+# res.age<-grep(" age",vlab.m,fixed=TRUE,value=T)
+# res.voted10<-grep("voted",vlab.m,fixed=TRUE,value=T)
+# res.class<-grep("class",vlab.m,value=T)
+# res.activ<-grep("activity",vlab.m,value=T)
+
+
+```
+
+
+
+
+```{r recode}
+############################################################################################
+## Recode
+
+elsaw<-elsaw|>mutate(
+            AgeCat85.f=as.factor(case_when(
+            indager>=50 & indager<65 ~ "50-64",
+            indager>=65 & indager<75 ~ "65-74",
+            indager>=75 & indager<85 ~ "75-84",
+            indager>=85  ~ "85+"
+            )),
+            AgeCat80.f=as.factor(case_when(
+            indager>=50 & indager<65 ~ "50-64",
+            indager>=65 & indager<70 ~ "65-69",
+            indager>=70 & indager<75 ~ "70-74",
+            indager>=75 & indager<80 ~ "75-79",
+            indager>=80  ~ "80+"
+            )
+            )
+)
+      
+attr(elsaw$AgeCat80.f,"label")<-"Banded age, five categories"
+attr(elsaw$AgeCat85.f,"label")<-"Banded age, four categories"
+
+
+for (hav in c(ivs,"scsptrvt")) {
+elsaw<-cbind(elsaw,tmp=tfactor(
+                      eval(
+                      parse(
+                        text=paste0("elsaw$",hav)))))
+names(elsaw)[ncol(elsaw)]<-paste0(hav,".f")
+}
+
+
+
+for(v  in c(paste0(ivs,".f"),"scsptrvt.f")) {
+elsaw<-elsaw|>mutate(
+eval(
+parse(
+text=paste0(  
+    v,"r=as.factor(case_when(",v,"==\"[-9] Refusal (8)\"       ~ NA_character_,",
+    v,"==\"[-8] Don\'t know (9)\"                              ~ NA_character_,",
+    v,"==\"[-8] Don\'t know\"                                  ~ NA_character_,",
+    v,"==\"[-8] don\'t know\"      ~ NA_character_,",
+    v,"==\"[-9] Refused\"                                      ~ NA_character_,",
+    v,"==\"[-9] Refusal\"      ~ NA_character_,",
+    v,"==\"[-9] refusal\"      ~ NA_character_,",
+    v,"==\"[96] SPONTANEOUS: Semi-retired\"                    ~ NA_character_,",
+    v,"==\"[86] Irrelevant answer - not codeable 01-06 or 96\" ~ NA_character_,",
+    v,"==\"[85] Other answer - not codeable 01-06 or 96\"      ~ NA_character_,",
+    v,"==\"[6] SPONTANEOUS - do not currently use\"      ~ NA_character_,",
+    v,"==\"[85] Other answer - not codeable 01-04\"      ~ NA_character_,",
+    v,"==\"[-2] Self-completion instrument not completed\"      ~ NA_character_,",
+    v,"==\"[-1] Item not applicable\"      ~ NA_character_,",
+    v,"==\"[-1] Item not applicable\"                               ~ NA_character_,",
+    v,"==\"[-1] Not applicable\"                               ~ NA_character_,",
+    v,"==\"[-9] Not answered (99)\"      ~ NA_character_,",
+    v,"==\"[-9] Not answered\"      ~ NA_character_,",
+    v,"==\"[-3] No valid answer\"      ~ NA_character_,",
+    v,"==\"[99] Other\"      ~ NA_character_,",
+    v,"==\"[-2] not asked\"      ~ NA_character_,",
+    v,"==\"[-3] Incomplete/No job info collected\"      ~ NA_character_,",
+    v,"==\"[-9] No answer/refused\"      ~ NA_character_,",
+    ".default =",v,"))"
+      )
+)
+      ))
+      
+names(elsaw)[ncol(elsaw)]<-paste0(v,"r")
+}
+
+levels(elsaw$scsptrvt.fr)[c(1,2)]<-c("Didn't vote","Voted")
+``` 
+
+
+
+
+## 1. Variables used
+
+|Name|Description|Variable label
+|----|-----------|------------------------------------:
+Age  4 categories  | AGECAT80    | `{r} attr(elsaw$AgeCat80, "label")`
+Age 4 categories  | AGECAT85    | `{r} attr(elsaw$AgeCat85, "label")`
+Sex  | INDSEX    | `{r} attr(elsaw$indsex, "label")`
+Marital status|DIMARR [Need recoding]|`{r} attr(elsaw$dimarr, "label")`
+Household type (Remove other)| hhdtypb|`{r} attr(elsaw$hhdtypb, "label")`
+Social class – NS-SEC | W10NSSEC5|`{r} attr(elsaw$w10nssec5, "label")`
+Main activity ..retired/employed etc (Remove Other)| WPDES|`{r} attr(elsaw$wpdes, "label")`
+Education/highest qual. (Recode as previous article) | EDQUAL|`{r} attr(elsaw$edqual, "label")`
+Ethnicity | ETHNIC|`{r} attr(elsaw$ethnic, "label")`
+Religion | SCORGRL|`{r} attr(elsaw$scorgrl, "label")`
+General Health| HEHELF|`{r} attr(elsaw$hehelf, "label")`
+Mental Health| CFMAP (Recode into 3 Very good, Good, Fair,Poor)|`{r} attr(elsaw$cfmap, "label")`
+Memory issues| CFMETM|`{r}  attr(elsaw$cfmetm, "label")`
+Past voting behaviour|VotGE1,VotGE3,VotGE8,VotGE9|Voted in the past (from previous waves 1, 3, 8, 9, 10)`
+Voted at the GE|SCSPTRVT|`{r}  attr(elsaw$scsptrvt, "label")`
+Capacity everyday activities|HEADLB|`{r}  attr(elsaw$headlb, "label")`
+Financial security|IAFCON,IAFINS,EXRELA|`{r}  attr(elsaw$ervol, "label")`
+Control|IAFIND|`{r}  attr(elsaw$iafind, "label")`
+Financial future | EXRSLF|`{r}  attr(elsaw$exrslf, "label")`
+Happiness | PSCEDD|`{r}  attr(elsaw$pscedd, "label")`
+Age perception | PSAGF|`{r}  attr(elsaw$psagf, "label")`
+Social isolation | PSCEDE|`{r}  attr(elsaw$pscede, "label")`
+Use of car | SPCAR|`{r}  attr(elsaw$spcar, "label")`
+Use of public transport | SPTRAA|`{r}  attr(elsaw$sptraa, "label")`
+Lift from friends | SPLIFT|`{r}  attr(elsaw$splift, "label")`
+Grandchildren|DIGRAN |`{r}  attr(elsaw$digran, "label")`
+Internet use | HOBB|`{r}  attr(elsaw$hobb, "label")`
+Life expectancy expectation | EXLO80|`{r}  attr(elsaw$exlo80, "label")`
+Volunteering | ERFVOL|`{r}  attr(elsaw$erfvol, "label")`
+Caring responsibility| |`{r}  attr(elsaw$ervol, "label")`
+Civic engagement|SCORGPO|`{r}  attr(elsaw$scorgpo, "label")`
+Weights | w10w1lwgt | Wave 10 Longitudinal weight (wave 1 base)"                                      
+Weights | w10w4lwgt | Wave 10 Longitudinal weight (wave 4 base)"                                      
+Weights |w10xwgt | Wave 10 cross-sectional weight"                                                   
+Weights |w10scwt | Wave 10 main self-completion weight"  
+
+
+<!-- - Income (declies?) IASICK -->
+
+<!-- 6168	scorgpo	F2		Numeric -->
+<!-- 6169	scorgnw	F2	Whether is a member of tenants groups, resident groups, neighbourhoold watch	Numeric -->
+<!-- 6170	scorgrl	F2	Whether is a member of a church or other religious group	Numeric -->
+<!-- 6171	scorgch	F2	Whether is a member of charitable associations	Numeric -->
+<!-- 6172	scorged	F2	Whether is a member of education, arts or music groups or evening classes	Numeric -->
+<!-- 6173	scorgsc	F2	Whether is a member of social clubs	Numeric -->
+<!-- 6174	scorgsp	F2	Whether is a member of sports clubs, gyms, exercise classes	Numeric -->
+<!-- 6175	scorg95	F2	Whether is a member of other organisations, club or societies	Numeric -->
+<!-- 6176	scorg96	F2	Respondent is not a member of any organisations, clubs or societies	Numeric -->
+<!-- 6177	scorgn	F2	Number of committee meetings attends in a year	Numeric -->
+
+- Interest in politics
+- Values
+
+
+<!-- - Other activities: WPACT -->
+
+
+## 2. Recoding suggestions:
+
+1. Household type (HHDTYPB):
+
+- Single person (adult) households
+- Families (large + small)
+- 2 adults households
+- Large adults HH
+
+
+2. Marital status (DIMARR)
+
+- Single/never married
+- Married
+- Separated/dicvorced/widowed
+
+3. Employment status (WPDES)
+
+- Retired + looking after family/home
+- In employment 
+- Long term sick + unemployed
+
+4. Highest qualification (EDQUAL)
+
+- Detailed version
+
+  - Degree or equivalent 
+  - Higher ed below degree
+  - A level or equivalent
+  - GCSE or equivalent
+  - Foreign
+  - No qualification
+
+- Short version
+
+  - Higher education 
+  - Secondary education
+  - Foreign
+  - No qualification
+
+
+## 3 Provisional results
+
+::: panel-tabset
+
+```{r univariates}
+#| results: asis
+#| echo: false
+
+elsaw.s<-svydesign(~1,weights=~w10xwgt,data=elsaw)
+
+# Apply the function to all  variables 
+rslt.r <- lapply(ivs, wfreq)
+rslt.c <- lapply(ivs, wfreq.r)
+
+
+# Print the tables for each dependent variable using kable for better formatting
+for (i in 1:length(rslt.c)) {
+cat('# ', ivs[i], '\n')
+
+cat('\n')
+cat(paste0("**Frequency table of unrecoded *",ivs[i],"* **"))
+cat('\n')
+  
+print(knitr::kable(rslt.r[[i]],"html"))
+
+cat('\n')
+cat(paste0("**Frequency table of recoded *",ivs[i],"* **"))
+cat('\n')
+
+print(knitr::kable(rslt.c[[i]],"html"))
+
+cat('\n\n')
+cat(paste0("**Contingency table of  voting behaviour by *",ivs[i],"* **"))
+cat('\n')
+print(kable(colPct(svytable(as.formula(paste0("~", ivs[i],".fr","+ scsptrvt.fr")), elsaw.s))))
+#svytable(as.formula(paste0("~", var,".f")), design = elsaw.s)
+
+t<-svychisq(as.formula(paste0("~", ivs[i],".fr","+ scsptrvt.fr")), elsaw.s)
+
+print(t$method)
+cat('\n')
+print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+
+cat('\n')
+}
+```
+
+::: 
+
