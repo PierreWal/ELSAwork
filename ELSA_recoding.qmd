@@ -4,7 +4,10 @@ subtitle: Exploratory analysis  - draft version 1
 author: "Pierre Walthéry"
 date: today
 date-format: DD MMMM YYYY
-format: html
+format: 
+  html:
+    embed-resources: true
+  pdf: default
 editor: source
 execute:
   warning: false
