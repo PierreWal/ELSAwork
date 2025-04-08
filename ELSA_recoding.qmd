@@ -1,13 +1,13 @@
 ---
 title: "ELSA voting patterns study"
-subtitle: Exploratory analysis  - draft version 1
+subtitle: Exploratory analysis  - draft version 2
 author: "Pierre Walthéry"
 date: today
 date-format: DD MMMM YYYY
 format: 
   html:
     embed-resources: true
-  pdf: default
+#  odt: default
 editor: source
 execute:
   warning: false
@@ -17,18 +17,11 @@ execute:
 ---
 
 # Introduction
-This document presents frequency and contingency tables for a series of variables
-from the English Longitudinal Study of Ageing - ELSA Wave 10.
+This document presents frequency and contingency tables as well as  regression output for a series of variables
+from the English Longitudinal Study of Ageing - ELSA Wave 10, looking at their pattern of association with voting pattern at Wave 10.
 
-The table below presents a list of all variables taken into account. 
-Recoding suggestion are also described below for discussion but haven't been implemented at this stage.
+Descriptive statistics  of all variables taken into account in the analysis is presented in Appendix 1.  
 
-Results are presented as follows, under each tab below:
-
-- Weighted frequencies and proportions of the original variables
-- Weighted frequencies and proportions of the recoded (ie missing/invalid values removed) variables
-- Contingency table of the variable with votring behaviour at Wave 10
-- Chi-Squared test of independence.
 
 ```{r data}
 
@@ -36,14 +29,16 @@ rm(list=ls())
 
  
 
-ivs<-c("indsex","tenureb", "dimarr","hhdtypb","w10nssec5","wpdes", "edqual", "ethnic", "scorgrl",  "hehelf","cfmap", "cfmetm","VotGE1","VotGE3","VotGE8","VotGE9", "headlba", "headlbe","iafcon", "exrela","iafind", "pscedd", "pscede", "spcar", "sptraa", "splift", "hobb","erfvol","scorgpo")
+ivs<-c("indsex","tenureb", "dimarr","hhdtypb","w10nssec5","wpdes","edqual", "ethnic", "scorgrl",  "hehelf","cfmap", "cfmetm","VotGE01","VotGE05","VotGE15","VotGE17", "headlba", "headlbe","iafcon", "exrela","iafind", "pscedd", "pscede", "spcar", "sptraa", "splift", "hobb","erfvol","scorgpo")
 
+extrav<-c("VotRec0","VotRec01","VotGE19","wpdes5","edqual4","dimarr4", "hhdtypb4","srh4")
 
 library(haven)
 library(survey)
 library(dplyr)
 library(knitr)
-# datadir<-"~/Data/elsa/UKDA-5050-stata/stata/stata13_se/"
+library(gtsummary)
+datadir<-"~/Data/elsa/UKDA-5050-stata/stata/stata13_se/"
 # elsa0<-read_dta(paste0(datadir,"wave_0_common_variables_v2.dta"))
 # elsa.ifs<-read_dta(paste0(datadir,"wave_10_ifs_derived_variables.dta"))
 # elsa<-read_dta(paste0(datadir,"wave_10_elsa_data_eul_v4.dta"))
@@ -71,10 +66,10 @@ library(knitr)
 #            ),
 #            by="idauniq",all=T)
 # 
-# names(vot1389)[which(names(vot1389)=="scptpa1")]<-"VotGE1"
-# names(vot1389)[which(names(vot1389)=="scpt01")]<-"VotGE3"
-# names(vot1389)[which(names(vot1389)=="scptrvt.x")]<-"VotGE8"
-# names(vot1389)[which(names(vot1389)=="scptrvt.y")]<-"VotGE9"
+# names(vot1389)[which(names(vot1389)=="scptpa1")]<-"VotGE01"
+# names(vot1389)[which(names(vot1389)=="scpt01")]<-"VotGE05"
+# names(vot1389)[which(names(vot1389)=="scptrvt.x")]<-"VotGE15"
+# names(vot1389)[which(names(vot1389)=="scptrvt.y")]<-"VotGE17"
 # 
 # elsa<-merge(elsa, vot1389,
 #              by="idauniq",all=T
@@ -120,6 +115,27 @@ round(
 )
 }
 
+# Get Unweighted frequency tables
+ufreq <- function(var) {
+  # Create frequency table
+  freq_table <- ftable(as.formula(paste0(var,".f~1")), data = elsaw)
+  
+  # Calculate percentages
+  percents <- uniPct(freq_table)
+  
+  # Create a data frame with Label, Frequency, and Percentage (rounded to 1 digit)
+  result <- data.frame(
+    Label = levels(eval(parse(text=paste0("elsaw$",var,".f")))),
+    Frequencies = round(as.vector(freq_table), 1),
+    Percent = round(as.vector(percents), 1)
+  )
+  names(result)[1]<-attr(eval(parse(text=paste0("elsaw$",var))),"label")
+  # Return the result
+  return(result)
+}
+
+  
+  
 # Get weighted frequency tables
 wfreq <- function(var) {
   # Create frequency table
@@ -157,54 +173,18 @@ wfreq.r <- function(var) {
   return(result)
 }
 
-
-
-############################################################################################
-## Variable search
-
-# vlab.m<-""
-# for (vr in names(elsaw)) {
-# vlab.m<-c(vlab.m,paste(vr,attr(elsaw[[vr]],"label"),sep="----"))
-# }
-# 
-# vlab0<-""
-# for (vr in names(elsa0)) {
-# vlab0<-c(vlab0,paste(vr,attr(elsa0[[vr]],"label"),sep="----"))
-# }
-# 
-# vlab.e1<-""
-# for (vr in names(elsa1)) {
-# vlab.e1<-c(vlab.e1,paste(vr,attr(elsa1[[vr]],"label"),sep="----"))
-# }
-# 
-# vlab.e3<-""
-# for (vr in names(elsa3)) {
-# vlab.e3<-c(vlab.e3,paste(vr,attr(elsa3[[vr]],"label"),sep="----"))
-# }
-# 
-# vlab.e8<-""
-# for (vr in names(elsa8)) {
-# vlab.e8<-c(vlab.e8,paste(vr,attr(elsa8[[vr]],"label"),sep="----"))
-# }
-# 
-# 
-# res.voted1<-grep("voted",vlab.e1,fixed=TRUE,value=T)
-# res.voted3<-grep("voted",vlab.e3,fixed=TRUE,value=T)
-# res.voted8<-grep("voted",vlab.e8,fixed=TRUE,value=T)
-# 
-# res.age<-grep(" age",vlab.m,fixed=TRUE,value=T)
-# res.voted10<-grep("voted",vlab.m,fixed=TRUE,value=T)
-# res.class<-grep("class",vlab.m,value=T)
-# res.activ<-grep("activity",vlab.m,value=T)
-
-
 ```
 
 
-
+ 
 
 ```{r recode}
 ############################################################################################
+## Renaming voting variables
+names(elsaw)[which(names(elsaw)=="scsptrvt")]<-"VotGE19"
+
+
+
 ## Recode
 
 elsaw<-elsaw|>mutate(
@@ -220,15 +200,88 @@ elsaw<-elsaw|>mutate(
             indager>=70 & indager<75 ~ "70-74",
             indager>=75 & indager<80 ~ "75-79",
             indager>=80  ~ "80+"
-            )
-            )
-)
-      
+            )),
+            AgeCat2.f=as.factor(case_when(
+            indager>=50 & indager<70 ~ "50-69",
+            indager>=70 ~ "70+"
+            )),
+            AgeCat3.f=as.factor(case_when(
+            indager>=50 & indager<70 ~ "50-69",
+            indager>=70 & indager<80 ~ "70-79",
+            indager>=80  ~ "80+"
+            )),
+            wpdes5=as.factor(case_when(
+            wpdes==1 | wpdes==96 ~ "Retired (inc part)",
+            wpdes==2 | wpdes==3~ "In enployment",
+            wpdes==4 | wpdes==6~ "FT carer + unemp.",
+            wpdes==5 ~ "LT sick/disabled"
+            )),            
+            edqual4=as.factor(case_when(
+            edqual==1 | edqual==2 ~ "Tertiary",
+            edqual==3 | edqual==4  | edqual==5 ~ "Secondary",
+            edqual==6 ~ "Foreign",
+            edqual==7 ~ "No qualifications"
+            )),
+            dimarr4=as.factor(case_when(
+            dimarr==1  ~ "Single",
+            dimarr==2 | dimarr==3 ~ "Married/SP",
+            dimarr==4 | dimarr==5 ~ "Divorced/separated",
+            dimarr==6 ~ "Widowed"
+            )),
+            hhdtypb4=as.factor(case_when(
+            hhdtypb==1  | hhdtypb==7 ~ "Single person HH",
+            hhdtypb==2 | dimarr==6 ~ "Two adults HH",
+            hhdtypb==3 | dimarr==4 ~ "Family, large or small ",
+            hhdtypb==5 ~ "Large adult HH"
+            )),
+            srh4=as.factor(case_when(
+            hehelf==1  | hehelf==2 ~ "Excel/V. good",
+            hehelf==3 ~ "Good",
+            hehelf==4  ~ "Fair",
+            hehelf==5 ~ "Poor"
+            ))
+          )            
+            
+
+
+#### Voting record - 2001-2017 
+for(l in c("VotGE01","VotGE05","VotGE15","VotGE15","VotGE17")){
+tmp<-as.numeric(eval(parse(text=paste0("elsaw$",l))))
+elsaw[paste0(l,".n")]<-ifelse(tmp<0 | is.na(tmp),0,tmp)  
+}
+
+### Raw GE voting number
+elsaw$votrec<-elsaw$VotGE01.n+elsaw$VotGE05.n+elsaw$VotGE15.n+elsaw$VotGE17.n
+
+### Factor version, 3 cat 
+elsaw<-elsaw|>mutate(VotRec0=case_when(
+                                votrec==0 ~ "None", 
+                                votrec==1 | votrec==2 ~ "1-2",
+                                votrec==3 | votrec==4 ~ "3-4"),
+                     VotRec01=case_when(
+                                votrec==0 | votrec==1~ "None or 1", 
+                                votrec==2 ~ "2",
+                                votrec==3 | votrec==4 ~ "3-4"),
+                     )
+
 attr(elsaw$AgeCat80.f,"label")<-"Banded age, five categories"
 attr(elsaw$AgeCat85.f,"label")<-"Banded age, four categories"
+attr(elsaw$AgeCat2.f,"label")<-"Banded age, two categories"
+attr(elsaw$AgeCat3.f,"label")<-"Banded age, three categories"
+attr(elsaw$wpdes5,"label")<-"Recoded economic activity"
+attr(elsaw$edqual4,"label")<-"Recoded education 4 categories"
+attr(elsaw$dimarr4,"label")<-"Recoded marital status 4 categories"
+attr(elsaw$hhdtypb4,"label")<-"Recoded household type, 4 categories"
+attr(elsaw$VotRec0,"label")<-"Voting record, separate none"
+attr(elsaw$VotRec01,"label")<-"Voting record, 0-1 together"
 
 
-for (hav in c(ivs,"scsptrvt")) {
+```
+
+
+
+```{r factor}
+for (hav in c(ivs,extrav)) {
 elsaw<-cbind(elsaw,tmp=tfactor(
                       eval(
                       parse(
@@ -236,9 +289,13 @@ elsaw<-cbind(elsaw,tmp=tfactor(
 names(elsaw)[ncol(elsaw)]<-paste0(hav,".f")
 }
 
+```
 
 
-for(v  in c(paste0(ivs,".f"),"scsptrvt.f")) {
+
+
+```{r miscrec}
+for(v  in c(paste0(ivs,".f"),paste0(extrav,".f"),"AgeCat2.f","AgeCat3.f")) {
 elsaw<-elsaw|>mutate(
 eval(
 parse(
@@ -246,7 +303,7 @@ text=paste0(
     v,"r=as.factor(case_when(",v,"==\"[-9] Refusal (8)\"       ~ NA_character_,",
     v,"==\"[-8] Don\'t know (9)\"                              ~ NA_character_,",
     v,"==\"[-8] Don\'t know\"                                  ~ NA_character_,",
-    v,"==\"[-8] don\'t know\"      ~ NA_character_,",
+    v,"==\"[-8] don\'t know\"                                 ~ NA_character_,",
     v,"==\"[-9] Refused\"                                      ~ NA_character_,",
     v,"==\"[-9] Refusal\"      ~ NA_character_,",
     v,"==\"[-9] refusal\"      ~ NA_character_,",
@@ -274,7 +331,8 @@ text=paste0(
 names(elsaw)[ncol(elsaw)]<-paste0(v,"r")
 }
 
-levels(elsaw$scsptrvt.fr)[c(1,2)]<-c("Didn't vote","Voted")
+levels(elsaw$VotGE19.fr)[c(1,2)]<-c("Didn't vote","Voted")
+
 ``` 
 
 
@@ -321,19 +379,6 @@ Weights |w10xwgt | Wave 10 cross-sectional weight"
 Weights |w10scwt | Wave 10 main self-completion weight"  
 
 
-<!-- - Income (declies?) IASICK -->
-
-<!-- 6168	scorgpo	F2		Numeric -->
-<!-- 6169	scorgnw	F2	Whether is a member of tenants groups, resident groups, neighbourhoold watch	Numeric -->
-<!-- 6170	scorgrl	F2	Whether is a member of a church or other religious group	Numeric -->
-<!-- 6171	scorgch	F2	Whether is a member of charitable associations	Numeric -->
-<!-- 6172	scorged	F2	Whether is a member of education, arts or music groups or evening classes	Numeric -->
-<!-- 6173	scorgsc	F2	Whether is a member of social clubs	Numeric -->
-<!-- 6174	scorgsp	F2	Whether is a member of sports clubs, gyms, exercise classes	Numeric -->
-<!-- 6175	scorg95	F2	Whether is a member of other organisations, club or societies	Numeric -->
-<!-- 6176	scorg96	F2	Respondent is not a member of any organisations, clubs or societies	Numeric -->
-<!-- 6177	scorgn	F2	Number of committee meetings attends in a year	Numeric -->
-
 - Interest in politics
 - Values
 
@@ -341,7 +386,9 @@ Weights |w10scwt | Wave 10 main self-completion weight"
 <!-- - Other activities: WPACT -->
 
 
-## 2. Recoding suggestions:
+## 2. Variables recoding 
+
+### Recoding schemes:
 
 1. Household type (HHDTYPB):
 
@@ -382,44 +429,261 @@ Weights |w10scwt | Wave 10 main self-completion weight"
   - No qualification
 
 
-## 3 Provisional results
+
+#### ELSA fieldwork dates
+
+|Name|Fieldwork|Sample|Of which core|Vote asked|Last GE
+|----|---------|-----------|-------|------|-------:
+Wave 1 | 2002-03 | 12,100|11,391|Yes|June 2001 
+Wave 2 |2004/05 |9,432|8,780|No|June 2001
+Wave 3 |2006/07 |9,771|8,810|Yes|May 2005
+Wave 4 |2008/09 |11,050|9,886|No|May 2005
+Wave 5 |2010/11 | 10,274|9,090|No|May 2010
+Wave 6 |2012/13 |10,601|9,169|No|May 2010
+Wave 7 |2014/15 |9,666,|8,249|No|May 2010
+Wave 8 |2016/17 |8,445| 7,223|Yes|May 2015
+Wave 9|2018/19 |8,736| 7,289|Yes|June 2017
+Wave 10|2021-23|-|-|Yes|Dec. 2019
+
+Source: ELSA Wave 9 report, Table 1.1; Wikipedia.
+
+
+
+### Recoding notes and issues
+
+- There is potentially a large drop in the number of  obsersations resulting from  combining the voting records across waves: `{r} prettyNum(length(!is.na(elsaw$VotGE19)[!is.na(elsaw$VotGE01) | !is.na(elsaw$VotGE05) | !is.na(elsaw$VotGE15) | !is.na(elsaw$VotGE15)]),big.mark = ",")`. For this reason, missing values were coded as 0. As a result there may be a need to add a control for British vs non British citizenship. 
+- Ethnic has `{r} prettyNum(table(is.na(elsaw$ethnic))[2],big.mark = ",")` missing values. I do not recommend using it.
+
+
+
+
+## 3. Preliminary multivariate results
+
+Confidence intervals removed for readability.
+
+### 3.1 Unweighted regression results
+
+```{r multiv}
+#| output: asis
+elsaw$edqual4.fr<-relevel(elsaw$edqual4.fr,ref=4)
+elsaw$wpdes5.fr<-relevel(elsaw$wpdes5.fr,ref=2)
+elsaw$VotRec0.f<-relevel(elsaw$VotRec0.f,ref=3)
+elsaw$VotRec01.f<-relevel(elsaw$VotRec01.f,ref=3)
+elsaw$srh4.fr<-relevel(elsaw$srh4.fr,ref=1)
+attr(elsaw$edqual4.fr,"label")<-"Educational level"
+attr(elsaw$wpdes5.fr,"label")<-"Economic activity"
+attr(elsaw$VotRec0.f,"label")<-"Past voting record, v1"
+attr(elsaw$VotRec01.f,"label")<-"Past voting record, v2"
+attr(elsaw$srh4.fr,"label")<-"Self-rated health"
+attr(elsaw$indsex.fr,"label")<-"Sex"
+attr(elsaw$AgeCat3.fr,"label")<-"Age"
+attr(elsaw$srh4.fr,"label")<-"*Self-rated health*"
+
+reg<-list()
+
+reg[["a11"]]<-glm((VotGE19.fr) ~ VotRec0.f,
+                  elsaw,family=binomial())%>% tbl_regression(exponentiate = TRUE, digits=1)
+
+reg[["a12"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr,
+                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
+
+reg[["a13"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr+
+                    AgeCat3.fr,
+                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
+
+reg[["a14"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr+
+                    AgeCat3.fr+
+                    edqual4.fr,
+                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
+
+
+reg[["a15"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr+
+                    AgeCat3.fr+
+                    edqual4.fr+
+                    wpdes5.fr,
+                  elsaw,family=binomial())%>%   tbl_regression(exponentiate = TRUE, digits=1)
+
+reg[["a16"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr+
+                    AgeCat3.fr+
+                    edqual4.fr+
+                    wpdes5.fr+
+                    srh4.fr,
+                  elsaw,family=binomial())%>% tbl_regression(exponentiate = TRUE, digits=1)
+
+reg[["a17"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr*
+                    AgeCat3.fr+
+                    edqual4.fr+
+                    wpdes5.fr+
+                    srh4.fr,
+                  elsaw,family=binomial())%>%  tbl_regression(exponentiate = TRUE, digits=1)
+
+
+
+tbl_merge(tbls=reg,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**"))|> 
+  modify_column_hide(columns = c(conf.low_1,conf.low_2,conf.low_3,conf.low_4,conf.low_5,conf.low_6,conf.low_7,conf.high_1,conf.high_2,conf.high_3,conf.high_4,conf.high_5,conf.high_6,conf.high_7))
+
+```
+#### Model 7, unweighted
+
+```{r plot}
+reg[["a17"]]|>plot()
+
+```
+
+### 3.2 Weighted regression results
+
+```{r multiv_w}
+#| output: asis
+
+regw<-list()
+
+regw[["a11"]]<-glm((VotGE19.fr) ~ VotRec0.f,
+                    weights=w10xwgt,
+                  elsaw,family=binomial())%>% tbl_regression(exponentiate = TRUE, digits=1)
+
+regw[["a12"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr,
+                    weights=w10xwgt,
+                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
+
+regw[["a13"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr+
+                    AgeCat3.fr,
+                    weights=w10xwgt,
+                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
+
+regw[["a14"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr+
+                    AgeCat3.fr+
+                    edqual4.fr,
+                    weights=w10xwgt,
+                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
+
+
+regw[["a15"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr+
+                    AgeCat3.fr+
+                    edqual4.fr+
+                    wpdes5.fr,
+                  weights=w10xwgt,
+                  elsaw,family=binomial())%>%   tbl_regression(exponentiate = TRUE, digits=1)
+
+regw[["a16"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr+
+                    AgeCat3.fr+
+                    edqual4.fr+
+                    wpdes5.fr+
+                    srh4.fr,
+                    weights=w10xwgt,
+                  elsaw,family=binomial())%>% tbl_regression(exponentiate = TRUE, digits=1)
+
+regw[["a17"]]<-glm((VotGE19.fr) ~ VotRec0.f+
+                    indsex.fr*
+                    AgeCat3.fr+
+                    edqual4.fr+
+                    wpdes5.fr+
+                    srh4.fr,
+                   weights=w10xwgt,
+                  elsaw,family=binomial())%>%  tbl_regression(exponentiate = TRUE, digits=1)
+
+
+
+tbl_merge(tbls=reg,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**"))|> 
+  modify_column_hide(columns = c(conf.low_1,conf.low_2,conf.low_3,conf.low_4,conf.low_5,conf.low_6,conf.low_7,conf.high_1,conf.high_2,conf.high_3,conf.high_4,conf.high_5,conf.high_6,conf.high_7))
+
+```
+#### Model 7, weighted
+
+```{r plot_w}
+regw[["a17"]]|>plot()
+
+```
+
+## Appendix 1 Preliminary univariate and bivariate results
+
+Results are presented as follows, under each tab below:
+
+- Weighted frequencies and proportions of the original variables
+- Weighted frequencies and proportions of the recoded (ie missing/invalid values removed) variables
+- Contingency table of the variable with voting behaviour at Wave 10
+- Chi-Squared test of independence.
+
 
 ::: panel-tabset
+
 
 ```{r univariates}
 #| results: asis
 #| echo: false
 
+vars<-c(ivs,"wpdes5","edqual4","dimarr4", "hhdtypb4","VotRec0","VotRec01")
+
 elsaw.s<-svydesign(~1,weights=~w10xwgt,data=elsaw)
 
-# Apply the function to all  variables 
-rslt.r <- lapply(ivs, wfreq)
-rslt.c <- lapply(ivs, wfreq.r)
+# Apply the function to all  varsiables 
+rslt.u <- lapply(vars, ufreq)
+rslt.r <- lapply(vars, wfreq)
+rslt.c <- lapply(vars, wfreq.r)
 
 
-# Print the tables for each dependent variable using kable for better formatting
+# Print the tables for each dependent varsiable using kable for better formatting
 for (i in 1:length(rslt.c)) {
-cat('# ', ivs[i], '\n')
+cat('\n')
+cat('# ', vars[i], '\n')
+#print(knitr::kable(vars[i],"html"))
 
 cat('\n')
-cat(paste0("**Frequency table of unrecoded *",ivs[i],"* **"))
+cat(paste0("#### ** Unweighted frequency table of unrecoded *",vars[i],"* **"))
+cat('\n')
+  
+print(knitr::kable(rslt.u[[i]],"html"))
+
+cat('\n')
+
+################################################################################################
+
+cat(paste0("#### **Weighted frequency table of unrecoded *",vars[i],"* **"))
 cat('\n')
   
 print(knitr::kable(rslt.r[[i]],"html"))
 
 cat('\n')
-cat(paste0("**Frequency table of recoded *",ivs[i],"* **"))
+cat(paste0("#### **Weighted frequency table of recoded *",vars[i],"* **"))
 cat('\n')
 
 print(knitr::kable(rslt.c[[i]],"html"))
 
-cat('\n\n')
-cat(paste0("**Contingency table of  voting behaviour by *",ivs[i],"* **"))
-cat('\n')
-print(kable(colPct(svytable(as.formula(paste0("~", ivs[i],".fr","+ scsptrvt.fr")), elsaw.s))))
-#svytable(as.formula(paste0("~", var,".f")), design = elsaw.s)
+################################################################################################
 
-t<-svychisq(as.formula(paste0("~", ivs[i],".fr","+ scsptrvt.fr")), elsaw.s)
+cat('\n\n')
+cat(paste0("#### **Contingency table of  whether voted at the 2019 GE by ",vars[i],"* **"))
+cat('\n')
+print(kable(colPct(svytable(as.formula(paste0("~", vars[i],".fr","+VotGE19.fr")), elsaw.s))))
+
+t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ VotGE19.fr")), elsaw.s)
+
+print(t$method)
+cat('\n')
+print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+cat('\n')
+
+################################################################################################
+
+
+cat('\n\n')
+if(vars[i]!="indsex"){
+cat(paste0("#### **Contingency table of  Sex by *",vars[i],"* **"))
+cat('\n')
+print(kable(colPct(svytable(as.formula(paste0("~indsex.fr+", vars[i],".fr")), elsaw.s))))
+
+
+t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ indsex.fr")), elsaw.s)
 
 print(t$method)
 cat('\n')
@@ -427,6 +691,94 @@ print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
 
 cat('\n')
 }
+cat('\n\n')
+
+cat(paste0("#### **Contingency table of  Age (2 cat) by *",vars[i],"* **"))
+cat('\n')
+print(kable(colPct(svytable(as.formula(paste0("~AgeCat2.fr+", vars[i],".fr")), elsaw.s))))
+
+t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ AgeCat2.fr")), elsaw.s)
+
+print(t$method)
+cat('\n')
+print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+
+cat('\n')
+
+cat('\n\n')
+cat(paste0("#### **Contingency table of  Age (3 cat) by *",vars[i],"* **"))
+cat('\n')
+print(kable(colPct(svytable(as.formula(paste0("~AgeCat3.fr+", vars[i],".fr")), elsaw.s))))
+
+t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ AgeCat3.fr")), elsaw.s)
+
+print(t$method)
+cat('\n')
+print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+
+cat('\n')
+
+
+}
+
+cat('\n\n')
 ```
 
 ::: 
+
+
+
+<!-- ############################################################################################ -->
+<!-- <!-- ## Variable search --> -->
+
+<!-- # vlab.m<-"" -->
+<!-- # for (vr in names(elsaw)) { -->
+<!-- # vlab.m<-c(vlab.m,paste(vr,attr(elsaw[[vr]],"label"),sep="----")) -->
+<!-- # } -->
+<!-- #  -->
+<!-- # vlab0<-"" -->
+<!-- # for (vr in names(elsa0)) { -->
+<!-- # vlab0<-c(vlab0,paste(vr,attr(elsa0[[vr]],"label"),sep="----")) -->
+<!-- # } -->
+<!-- #  -->
+<!-- # vlab.e1<-"" -->
+<!-- # for (vr in names(elsa1)) { -->
+<!-- # vlab.e1<-c(vlab.e1,paste(vr,attr(elsa1[[vr]],"label"),sep="----")) -->
+<!-- # } -->
+<!-- #  -->
+<!-- # vlab.e3<-"" -->
+<!-- # for (vr in names(elsa3)) { -->
+<!-- # vlab.e3<-c(vlab.e3,paste(vr,attr(elsa3[[vr]],"label"),sep="----")) -->
+<!-- # } -->
+<!-- #  -->
+<!-- # vlab.e8<-"" -->
+<!-- # for (vr in names(elsa8)) { -->
+<!-- # vlab.e8<-c(vlab.e8,paste(vr,attr(elsa8[[vr]],"label"),sep="----")) -->
+<!-- # } -->
+<!-- #  -->
+<!-- #  -->
+<!-- # res.voted1<-grep("voted",vlab.e1,fixed=TRUE,value=T) 12-->
+<!-- # res.voted3<-grep("voted",vlab.e3,fixed=TRUE,value=T) -->
+<!-- # res.voted8<-grep("voted",vlab.e8,fixed=TRUE,value=T) -->
+<!-- #  -->
+<!-- # res.age<-grep(" age",vlab.m,fixed=TRUE,value=T) -->
+<!-- # res.voted10<-grep("voted",vlab.m,fixed=TRUE,value=T) -->
+<!-- # res.class<-grep("class",vlab.m,value=T) -->
+<!-- # res.activ<-grep("activity",vlab.m,value=T) -->
+
+
+<!-- - Income (declies?) IASICK -->
+
+<!-- 6168	scorgpo	F2		Numeric -->
+<!-- 6169	scorgnw	F2	Whether is a member of tenants groups, resident groups, neighbourhoold watch	Numeric -->
+<!-- 6170	scorgrl	F2	Whether is a member of a church or other religious group	Numeric -->
+<!-- 6171	scorgch	F2	Whether is a member of charitable associations	Numeric -->
+<!-- 6172	scorged	F2	Whether is a member of education, arts or music groups or evening classes	Numeric -->
+<!-- 6173	scorgsc	F2	Whether is a member of social clubs	Numeric -->
+<!-- 6174	scorgsp	F2	Whether is a member of sports clubs, gyms, exercise classes	Numeric -->
+<!-- 6175	scorg95	F2	Whether is a member of other organisations, club or societies	Numeric -->
+<!-- 6176	scorg96	F2	Respondent is not a member of any organisations, clubs or societies	Numeric -->
+<!-- 6177	scorgn	F2	Number of committee meetings attends in a year	Numeric -->
+
+
+
