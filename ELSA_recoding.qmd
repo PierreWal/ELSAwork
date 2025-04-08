@@ -594,7 +594,7 @@ regw[["a17"]]<-glm((VotGE19.fr) ~ VotRec0.f+
 
 
 
-tbl_merge(tbls=reg,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**"))|> 
+tbl_merge(tbls=regw,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**"))|> 
   modify_column_hide(columns = c(conf.low_1,conf.low_2,conf.low_3,conf.low_4,conf.low_5,conf.low_6,conf.low_7,conf.high_1,conf.high_2,conf.high_3,conf.high_4,conf.high_5,conf.high_6,conf.high_7))
 
 ```
