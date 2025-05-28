@@ -1,253 +1,229 @@
 ---
 title: "ELSA voting patterns study"
-subtitle: Exploratory analysis  - draft version 2
+subtitle: Exploratory analysis  - draft version 3
 author: "Pierre Walthéry"
 date: today
 date-format: DD MMMM YYYY
 format: 
   html:
-    embed-resources: true
+   embed-resources: true
+   page-layout: full
+   mainfont: "Open Sans"
+   toc: true
+   smooth-scroll: true
+   toc-location: left
+
 #  odt: default
-editor: source
 execute:
   warning: false
   message: false
   echo: false
   cache: false
+
 ---
 
-# Introduction
-This document presents frequency and contingency tables as well as  regression output for a series of variables
-from the English Longitudinal Study of Ageing - ELSA Wave 10, looking at their pattern of association with voting pattern at Wave 10.
+## Introduction
+This document presents preliminary descriptive,  uni-, bi-   and multivariate analysis   of voting at the 2019 General Elections  among the 50+, using  data from the English Longitudinal Study of Ageing - ELSA at Wave 10.
 
-Descriptive statistics  of all variables taken into account in the analysis is presented in Appendix 1.  
+- Section 1 presents the variables included in the analysis
+- Section 2 contains information about variable recoding and related issues
+- Section 3 includes systematic unweighted and weighted univariate frequency tables
+- Section 4 documents systematic unweighted and weighted contingency tables of the variables included in the analysis by votting behaviour at the 2019 general elections, age, sex. 
+- Section 5 presents additional three way analysis of voting behaviour, age, sex and the year general elections took place.
+- Section 6 presents the results of three series of logistic regression models of voting at the 2019 GE.
+
+
 
 
 ```{r data}
 
 rm(list=ls())
 
- 
 
-ivs<-c("indsex","tenureb", "dimarr","hhdtypb","w10nssec5","wpdes","edqual", "ethnic", "scorgrl",  "hehelf","cfmap", "cfmetm","VotGE01","VotGE05","VotGE15","VotGE17", "headlba", "headlbe","iafcon", "exrela","iafind", "pscedd", "pscede", "spcar", "sptraa", "splift", "hobb","erfvol","scorgpo")
+ivs<-c("cfmap", "cfmetm","dimarr","edqual","erfvol","ethnic","exrela","headlba","headlbe","hehelf","hhdtypb","hobb","iafcon","iafind","indsex","pscedd","pscede","scorgpo","scorgrl","spcar","splift","sptraa","tenureb","VotGE01","VotGE05","VotGE15","VotGE17","w10nssec5","wpdes")
 
-extrav<-c("VotRec0","VotRec01","VotGE19","wpdes5","edqual4","dimarr4", "hhdtypb4","srh4")
+extrav<-c("VotRec0","VotRec01","VotGE19","wpdes5","edqual4","dimarr4", "hhdtypb4","srh4","iafcon4")
 
 library(haven)
 library(survey)
 library(dplyr)
 library(knitr)
 library(gtsummary)
+library(ggplot2)
+
 datadir<-"~/Data/elsa/UKDA-5050-stata/stata/stata13_se/"
+
 # elsa0<-read_dta(paste0(datadir,"wave_0_common_variables_v2.dta"))
 # elsa.ifs<-read_dta(paste0(datadir,"wave_10_ifs_derived_variables.dta"))
-# elsa<-read_dta(paste0(datadir,"wave_10_elsa_data_eul_v4.dta"))
-# elsa1<-read_dta(paste0(datadir,"wave_1_core_data_v3.dta"))
-# elsa3<-read_dta(paste0(datadir,"wave_3_elsa_data_v4.dta"))
-# elsa8<-read_dta(paste0(datadir,"wave_8_elsa_data_eul_v2.dta"))
-# elsa9<-read_dta(paste0(datadir,"wave_9_elsa_data_eul_v2.dta"))
+# elsa1<-read_dta(paste0(datadir,"wave_1_core_data_v3.dta")) |> select(idauniq,scptpa1,indager,indsex,w1wgt)
+# elsa3<-read_dta(paste0(datadir,"wave_3_elsa_data_v4.dta"))  |> select(idauniq,scpt01,indager,indsex,w3xwgt)
+# elsa8<-read_dta(paste0(datadir,"wave_8_elsa_data_eul_v2.dta")) |> select(idauniq,scptrvt, indager,indsex,w8xwgt)
+# elsa9<-read_dta(paste0(datadir,"wave_9_elsa_data_eul_v2.dta")) |> select(idauniq,scptrvt,indager,indsex,w9xwgt)
+# elsa10<-read_dta(paste0(datadir,"wave_10_elsa_data_eul_v4.dta"))
 # 
-# elsa<-merge(elsa,elsa0|>
+# voted<-list(
+# GE01=elsa1,
+# GE05=elsa3,
+# GE15=elsa8,
+# GE17=elsa9,
+# GE19=elsa10 |> select(idauniq,scsptrvt,indager,indsex,w10xwgt)
+# )
+# 
+# names(voted[["GE01"]])[which(names(voted[["GE01"]])=="scptpa1")]<-"Wvot"
+# names(voted[["GE05"]])[which(names(voted[["GE05"]])=="scpt01")]<-"Wvot"
+# names(voted[["GE15"]])[which(names(voted[["GE15"]])=="scptrvt")]<-"Wvot"
+# names(voted[["GE17"]])[which(names(voted[["GE17"]])=="scptrvt")]<-"Wvot"
+# names(voted[["GE19"]])[which(names(voted[["GE19"]])=="scsptrvt")]<-"Wvot"
+# 
+# 
+# names(elsa1)[which(names(elsa1)=="scptpa1")]<-"VotGE01"
+# names(elsa3)[which(names(elsa3)=="scpt01")]<-"VotGE05"
+# names(elsa8)[which(names(elsa8)=="scptrvt")]<-"VotGE15"
+# names(elsa9)[which(names(elsa9)=="scptrvt")]<-"VotGE17"
+# 
+# for(w in c(1,3,8,9)){
+# tmp<-eval(parse(text=paste0("elsa",w)))
+# names(tmp)[3:4]<-c(paste0("indager",w),paste0("indsex",w))
+# eval(parse(text=paste0("elsa",w,"<-tmp")))
+# }
+# 
+# elsaw<-merge(elsa10,elsa0|>
 #                  select(idauniq,hhdtypb,tenureb,ethnic),
 #                  by="idauniq",all.x=T,all.Y=F)
-# elsa<-merge(elsa,elsa.ifs|>
+# 
+# elsaw<-merge(elsaw,elsa.ifs|>
 #                  select(idauniq,edqual),
 #                  by="idauniq",all.x=T,all.Y=F)
 # 
-# ### Voting
+# ### Cross-sectional voting subsamples
 # vot1389<-merge(
-#      merge(elsa1 |> select(idauniq,scptpa1),
-#            elsa3 |> select(idauniq,scpt01),
+#      merge(elsa1,
+#            elsa3,
 #                  by="idauniq",all=T
 #            ),
-#       merge(elsa8 |> select(idauniq,scptrvt),
-#             elsa9 |> select(idauniq,scptrvt),
+#       merge(elsa8 ,
+#             elsa9 ,
 #                  by="idauniq",all=T
 #            ),
 #            by="idauniq",all=T)
 # 
-# names(vot1389)[which(names(vot1389)=="scptpa1")]<-"VotGE01"
-# names(vot1389)[which(names(vot1389)=="scpt01")]<-"VotGE05"
-# names(vot1389)[which(names(vot1389)=="scptrvt.x")]<-"VotGE15"
-# names(vot1389)[which(names(vot1389)=="scptrvt.y")]<-"VotGE17"
 # 
-# elsa<-merge(elsa, vot1389,
+# vot13890<-merge(vot1389,elsa10 |> select(idauniq,scsptrvt,indager,indsex,w10xwgt) ,
+#              by="idauniq",all=T
+#            )
+# 
+# names(vot13890)[which(names(vot13890)=="scsptrvt")]<-"VotGE19"
+# names(vot13890)[which(names(vot13890)=="indager")]<-"indager10"
+# names(vot13890)[which(names(vot13890)=="indsex")]<-"indsex10"
+# 
+# names(elsaw)[which(names(elsaw)=="scsptrvt")]<-"VotGE19"
+# 
+# 
+# elsaw<-merge(elsaw, vot1389,
 #              by="idauniq",all=T
 #            )
 # 
 # 
-# elsaw<-elsa|>filter(!is.na(w10xwgt)) |>
-#            select(idauniq,ivs,exlo80, psagf, exrslf, indager, scsptrvt,w10xwgt)
+# elsaw<-elsaw|>filter(!is.na(w10xwgt)) |>
+#            select(idauniq,all_of(ivs),exlo80, psagf, exrslf, indager, VotGE19,w10xwgt)
 # 
-# write_dta(elsaw, "/tmp/elsaw.dta")
+# # Save the list to an RDS file
+# saveRDS(voted, file = "/home/mscsepw2/Dropbox/work/ELSAwork/data/voted.rds")
+# 
+# write_dta(vot13890, "/home/mscsepw2/Dropbox/work/ELSAwork/data/elsal.dta")
+# write_dta(elsaw, "/home/mscsepw2/Dropbox/work/ELSAwork/data/elsaw.dta")
 
-elsaw<-read_dta("/tmp/elsaw.dta")
+elsaw<-read_dta("/home/mscsepw2/Dropbox/work/ELSAwork/data/elsaw.dta")
+elsal<-read_dta("/home/mscsepw2/Dropbox/work/ELSAwork/data/elsal.dta")
+voted <- readRDS("/home/mscsepw2/Dropbox/work/ELSAwork/data/voted.rds")
 
 ###############################################################################################################
 ```
 
-```{r functions}
-tfactor<-function(v){
-  droplevels(as_factor(v,"both"))
-}
-
-lookfor<-function(name,dset){
-grep(name,names(dset),value=T)  
-}
-
-colPct<-function(tab){
-round(
-100*prop.table(tab,1),
-1
-)
-}
-
-rowPct<-function(tab){
-round(
-100*prop.table(tab,2),
-2  
-)
-}
-  uniPct<-function(tab){
-round(
-100*prop.table(tab),
-2  
-)
-}
-
-# Get Unweighted frequency tables
-ufreq <- function(var) {
-  # Create frequency table
-  freq_table <- ftable(as.formula(paste0(var,".f~1")), data = elsaw)
-  
-  # Calculate percentages
-  percents <- uniPct(freq_table)
-  
-  # Create a data frame with Label, Frequency, and Percentage (rounded to 1 digit)
-  result <- data.frame(
-    Label = levels(eval(parse(text=paste0("elsaw$",var,".f")))),
-    Frequencies = round(as.vector(freq_table), 1),
-    Percent = round(as.vector(percents), 1)
-  )
-  names(result)[1]<-attr(eval(parse(text=paste0("elsaw$",var))),"label")
-  # Return the result
-  return(result)
-}
-
-  
-  
-# Get weighted frequency tables
-wfreq <- function(var) {
-  # Create frequency table
-  freq_table <- svytable(as.formula(paste0("~", var,".f")), design = elsaw.s)
-  
-  # Calculate percentages
-  percents <- uniPct(freq_table)
-  
-  # Create a data frame with Label, Frequency, and Percentage (rounded to 1 digit)
-  result <- data.frame(
-    Label = names(freq_table),
-    Freq = round(as.vector(freq_table), 1),
-    Pct = round(as.vector(percents), 1)
-  )
-  names(result)[1]<-attr(eval(parse(text=paste0("elsaw$",var))),"label")
-  # Return the result
-  return(result)
-}
-
-wfreq.r <- function(var) {
-  # Create frequency table
-  freq_table <- svytable(as.formula(paste0("~", var,".fr")), design = elsaw.s)
-  
-  # Calculate percentages
-  percents <- uniPct(freq_table)
-  
-  # Create a data frame with Label, Frequency, and Percentage (rounded to 1 digit)
-  result <- data.frame(
-    Label = names(freq_table),
-    Freq = round(as.vector(freq_table), 1),
-    Pct = round(as.vector(percents), 1)
-  )
-  names(result)[1]<-attr(eval(parse(text=paste0("elsaw$",var))),"label")
-  # Return the result
-  return(result)
-}
-
+```{r functions,tidy=T}
+source("functions.R")
 ```
 
 
- 
 
 ```{r recode}
 ############################################################################################
 ## Renaming voting variables
-names(elsaw)[which(names(elsaw)=="scsptrvt")]<-"VotGE19"
+#elsaw$VotGE19<-elsaw$scsptrvt
 
 
 
 ## Recode
 
 elsaw<-elsaw|>mutate(
-            AgeCat85.f=as.factor(case_when(
-            indager>=50 & indager<65 ~ "50-64",
-            indager>=65 & indager<75 ~ "65-74",
-            indager>=75 & indager<85 ~ "75-84",
-            indager>=85  ~ "85+"
-            )),
-            AgeCat80.f=as.factor(case_when(
-            indager>=50 & indager<65 ~ "50-64",
-            indager>=65 & indager<70 ~ "65-69",
-            indager>=70 & indager<75 ~ "70-74",
-            indager>=75 & indager<80 ~ "75-79",
-            indager>=80  ~ "80+"
-            )),
-            AgeCat2.f=as.factor(case_when(
-            indager>=50 & indager<70 ~ "50-69",
-            indager>=70 ~ "70+"
-            )),
-            AgeCat3.f=as.factor(case_when(
-            indager>=50 & indager<70 ~ "50-69",
-            indager>=70 & indager<80 ~ "70-79",
-            indager>=80  ~ "80+"
-            )),
-            wpdes5=as.factor(case_when(
-            wpdes==1 | wpdes==96 ~ "Retired (inc part)",
-            wpdes==2 | wpdes==3~ "In enployment",
-            wpdes==4 | wpdes==6~ "FT carer + unemp.",
-            wpdes==5 ~ "LT sick/disabled"
-            )),            
-            edqual4=as.factor(case_when(
-            edqual==1 | edqual==2 ~ "Tertiary",
-            edqual==3 | edqual==4  | edqual==5 ~ "Secondary",
-            edqual==6 ~ "Foreign",
-            edqual==7 ~ "No qualifications"
-            )),
-            dimarr4=as.factor(case_when(
-            dimarr==1  ~ "Single",
-            dimarr==2 | dimarr==3 ~ "Married/SP",
-            dimarr==4 | dimarr==5 ~ "Divorced/separated",
-            dimarr==6 ~ "Widowed"
-            )),
-            hhdtypb4=as.factor(case_when(
-            hhdtypb==1  | hhdtypb==7 ~ "Single person HH",
-            hhdtypb==2 | dimarr==6 ~ "Two adults HH",
-            hhdtypb==3 | dimarr==4 ~ "Family, large or small ",
-            hhdtypb==5 ~ "Large adult HH"
-            )),
-            srh4=as.factor(case_when(
-            hehelf==1  | hehelf==2 ~ "Excel/V. good",
-            hehelf==3 ~ "Good",
-            hehelf==4  ~ "Fair",
-            hehelf==5 ~ "Poor"
-            ))
-          )            
-            
+  AgeCat85.f=as.factor(case_when(
+    indager>=50 & indager<65 ~ "50-64",
+    indager>=65 & indager<75 ~ "65-74",
+    indager>=75 & indager<85 ~ "75-84",
+    indager>=85  ~ "85+"
+  )),
+  AgeCat80.f=as.factor(case_when(
+    indager>=50 & indager<65 ~ "50-64",
+    indager>=65 & indager<70 ~ "65-69",
+    indager>=70 & indager<75 ~ "70-74",
+    indager>=75 & indager<80 ~ "75-79",
+    indager>=80  ~ "80+"
+  )),
+  AgeCat2.f=as.factor(case_when(
+    indager>=50 & indager<70 ~ "50-69",
+    indager>=70 ~ "70+"
+  )),
+  AgeCat3.f=as.factor(case_when(
+    indager>=50 & indager<70 ~ "50-69",
+    indager>=70 & indager<80 ~ "70-79",
+    indager>=80  ~ "80+"
+  )),
+  wpdes5=as.factor(case_when(
+    wpdes==1 | wpdes==96 ~ "Retired (inc part)",
+    wpdes==2 | wpdes==3~ "In employment",
+    wpdes==4 | wpdes==6~ "FT carer + unemp.",
+    wpdes==5 ~ "LT sick/disabled"
+  )),            
+  edqual4=as.factor(case_when(
+    edqual==1 | edqual==2 ~ "Tertiary",
+    edqual==3 | edqual==4  | edqual==5 ~ "Secondary",
+    edqual==6 ~ "Foreign",
+    edqual==7 ~ "No qualifications"
+  )),
+  dimarr4=as.factor(case_when(
+    dimarr==1  ~ "Single",
+    dimarr==2 | dimarr==3 ~ "Married/SP",
+    dimarr==4 | dimarr==5 ~ "Divorced/separated",
+    dimarr==6 ~ "Widowed"
+  )),
+  hhdtypb4=as.factor(case_when(
+    hhdtypb==1  | hhdtypb==7 ~ "Single person HH",
+    hhdtypb==2 | dimarr==6 ~ "Two adults HH",
+    hhdtypb==3 | dimarr==4 ~ "Family, large or small ",
+    hhdtypb==5 ~ "Large adult HH",
+    .default = "Other"
+  )),
+  srh4=as.factor(case_when(
+    hehelf==1  | hehelf==2 ~ "Excel/V. good",
+    hehelf==3 ~ "Good",
+    hehelf==4  ~ "Fair",
+    hehelf==5 ~ "Poor"
+  )),
+    iafcon4=as.factor(case_when(
+    iafcon==1   ~ "Manage very well",
+    iafcon==2   ~ "Manage quite well",
+    iafcon==3   ~ "Get by alright",
+    iafcon==4 | iafcon==5 | iafcon==6 ~ "Does not manage well"
+  ))
+
+)            
+
 
 
 #### Voting record - 2001-2017 
 for(l in c("VotGE01","VotGE05","VotGE15","VotGE15","VotGE17")){
-tmp<-as.numeric(eval(parse(text=paste0("elsaw$",l))))
-elsaw[paste0(l,".n")]<-ifelse(tmp<0 | is.na(tmp),0,tmp)  
+  tmp<-as.numeric(eval(parse(text=paste0("elsaw$",l))))
+  elsaw[paste0(l,".n")]<-ifelse(tmp<0 | is.na(tmp),0,tmp)  
 }
 
 ### Raw GE voting number
@@ -255,14 +231,14 @@ elsaw$votrec<-elsaw$VotGE01.n+elsaw$VotGE05.n+elsaw$VotGE15.n+elsaw$VotGE17.n
 
 ### Factor version, 3 cat 
 elsaw<-elsaw|>mutate(VotRec0=case_when(
-                                votrec==0 ~ "None", 
-                                votrec==1 | votrec==2 ~ "1-2",
-                                votrec==3 | votrec==4 ~ "3-4"),
+  votrec==0 ~ "None", 
+  votrec==1 | votrec==2 ~ "1-2",
+  votrec==3 | votrec==4 ~ "3-4"),
                      VotRec01=case_when(
-                                votrec==0 | votrec==1~ "None or 1", 
-                                votrec==2 ~ "2",
-                                votrec==3 | votrec==4 ~ "3-4"),
-                     )
+    votrec==0 | votrec==1~ "None or 1", 
+    votrec==2 ~ "2",
+    votrec==3 | votrec==4 ~ "3-4"),
+)
 
 attr(elsaw$AgeCat80.f,"label")<-"Banded age, five categories"
 attr(elsaw$AgeCat85.f,"label")<-"Banded age, four categories"
@@ -279,73 +255,95 @@ attr(elsaw$VotRec01,"label")<-"Voting record, 0-1 together"
 ```
 
 
-
 ```{r factor}
 for (hav in c(ivs,extrav)) {
-elsaw<-cbind(elsaw,tmp=tfactor(
-                      eval(
-                      parse(
-                        text=paste0("elsaw$",hav)))))
-names(elsaw)[ncol(elsaw)]<-paste0(hav,".f")
+  elsaw<-cbind(elsaw,tmp=tfactor(
+    eval(
+      parse(
+        text=paste0("elsaw$",hav)))))
+  names(elsaw)[ncol(elsaw)]<-paste0(hav,".f")
 }
 
 ```
 
 
-
-
 ```{r miscrec}
 for(v  in c(paste0(ivs,".f"),paste0(extrav,".f"),"AgeCat2.f","AgeCat3.f")) {
-elsaw<-elsaw|>mutate(
-eval(
-parse(
-text=paste0(  
-    v,"r=as.factor(case_when(",v,"==\"[-9] Refusal (8)\"       ~ NA_character_,",
-    v,"==\"[-8] Don\'t know (9)\"                              ~ NA_character_,",
-    v,"==\"[-8] Don\'t know\"                                  ~ NA_character_,",
-    v,"==\"[-8] don\'t know\"                                 ~ NA_character_,",
-    v,"==\"[-9] Refused\"                                      ~ NA_character_,",
-    v,"==\"[-9] Refusal\"      ~ NA_character_,",
-    v,"==\"[-9] refusal\"      ~ NA_character_,",
-    v,"==\"[96] SPONTANEOUS: Semi-retired\"                    ~ NA_character_,",
-    v,"==\"[86] Irrelevant answer - not codeable 01-06 or 96\" ~ NA_character_,",
-    v,"==\"[85] Other answer - not codeable 01-06 or 96\"      ~ NA_character_,",
-    v,"==\"[6] SPONTANEOUS - do not currently use\"      ~ NA_character_,",
-    v,"==\"[85] Other answer - not codeable 01-04\"      ~ NA_character_,",
-    v,"==\"[-2] Self-completion instrument not completed\"      ~ NA_character_,",
-    v,"==\"[-1] Item not applicable\"      ~ NA_character_,",
-    v,"==\"[-1] Item not applicable\"                               ~ NA_character_,",
-    v,"==\"[-1] Not applicable\"                               ~ NA_character_,",
-    v,"==\"[-9] Not answered (99)\"      ~ NA_character_,",
-    v,"==\"[-9] Not answered\"      ~ NA_character_,",
-    v,"==\"[-3] No valid answer\"      ~ NA_character_,",
-    v,"==\"[99] Other\"      ~ NA_character_,",
-    v,"==\"[-2] not asked\"      ~ NA_character_,",
-    v,"==\"[-3] Incomplete/No job info collected\"      ~ NA_character_,",
-    v,"==\"[-9] No answer/refused\"      ~ NA_character_,",
-    ".default =",v,"))"
+  elsaw<-elsaw|>mutate(
+    eval(
+      parse(
+        text=paste0(  
+          v,"r=as.factor(case_when(",v,"==\"[-9] Refusal (8)\"       ~ NA_character_,",
+          v,"==\"[-8] Don\'t know (9)\"                              ~ NA_character_,",
+          v,"==\"[-8] Don\'t know\"                                  ~ NA_character_,",
+          v,"==\"[-8] don\'t know\"                                 ~ NA_character_,",
+          v,"==\"[-9] Refused\"                                      ~ NA_character_,",
+          v,"==\"[-9] Refusal\"      ~ NA_character_,",
+          v,"==\"[-9] refusal\"      ~ NA_character_,",
+          v,"==\"[96] SPONTANEOUS: Semi-retired\"                    ~ NA_character_,",
+          v,"==\"[86] Irrelevant answer - not codeable 01-06 or 96\" ~ NA_character_,",
+          v,"==\"[85] Other answer - not codeable 01-06 or 96\"      ~ NA_character_,",
+          v,"==\"[6] SPONTANEOUS - do not currently use\"      ~ NA_character_,",
+          v,"==\"[85] Other answer - not codeable 01-04\"      ~ NA_character_,",
+          v,"==\"[-2] Self-completion instrument not completed\"      ~ NA_character_,",
+          v,"==\"[-1] Item not applicable\"      ~ NA_character_,",
+          v,"==\"[-1] Item not applicable\"                               ~ NA_character_,",
+          v,"==\"[-1] Not applicable\"                               ~ NA_character_,",
+          v,"==\"[-9] Not answered (99)\"      ~ NA_character_,",
+          v,"==\"[-9] Not answered\"      ~ NA_character_,",
+          v,"==\"[-3] No valid answer\"      ~ NA_character_,",
+          v,"==\"[99] Other\"      ~ NA_character_,",
+          v,"==\"[-2] not asked\"      ~ NA_character_,",
+          v,"==\"[-3] Incomplete/No job info collected\"      ~ NA_character_,",
+          v,"==\"[-9] No answer/refused\"      ~ NA_character_,",
+          ".default =",v,"))"
+        )
       )
-)
-      ))
-      
-names(elsaw)[ncol(elsaw)]<-paste0(v,"r")
+    ))
+  
+  names(elsaw)[ncol(elsaw)]<-paste0(v,"r")
 }
 
 levels(elsaw$VotGE19.fr)[c(1,2)]<-c("Didn't vote","Voted")
 
+
+elsaw$edqual4.fr<-relevel(elsaw$edqual4.fr,ref=4)
+elsaw$wpdes5.fr<-relevel(elsaw$wpdes5.fr,ref=2)
+elsaw$VotRec0.f<-relevel(elsaw$VotRec0.f,ref=3)
+elsaw$VotRec01.f<-relevel(elsaw$VotRec01.f,ref=3)
+elsaw$srh4.fr<-relevel(elsaw$srh4.fr,ref=1)
+elsaw$dimarr4.fr<-relevel(elsaw$dimarr4.fr,ref=2)
+elsaw$hhdtypb4.fr<-relevel(elsaw$hhdtypb4.fr,ref=5)
+
+attr(elsaw$edqual4.fr,"label")<-"Educational level"
+attr(elsaw$wpdes5.fr,"label")<-"Economic activity"
+attr(elsaw$VotRec0.f,"label")<-"Past voting record, v1"
+attr(elsaw$VotRec01.f,"label")<-"Past voting record, v2"
+attr(elsaw$srh4.fr,"label")<-"Self-rated health"
+attr(elsaw$indsex.fr,"label")<-"Sex"
+attr(elsaw$AgeCat3.fr,"label")<-"Age"
+attr(elsaw$srh4.fr,"label")<-"Self-rated health"
+attr(elsaw$dimarr4.fr,"label")<-"Marital status"
+attr(elsaw$hhdtypb4.fr,"label")<-"Household type"
+attr(elsaw$cfmap.fr,"label")<-"Self-rated mental abilities"
+attr(elsaw$cfmetm.fr,"label")<-"Self-rated memory"
+attr(elsaw$iafcon4.fr,"label")<-"Financial situation"
+attr(elsaw$pscede.fr,"label")<-"Feels lonely?"
+attr(elsaw$hobb.fr,"label")<-"Internet connection?"
+attr(elsaw$erfvol.fr,"label")<-"Volunteered"
+
+
 ``` 
 
 
-
-
-## 1. Variables used
+## 1. Variables included
 
 |Name|Description|Variable label
 |----|-----------|------------------------------------:
 Age  4 categories  | AGECAT80    | `{r} attr(elsaw$AgeCat80, "label")`
 Age 4 categories  | AGECAT85    | `{r} attr(elsaw$AgeCat85, "label")`
 Sex  | INDSEX    | `{r} attr(elsaw$indsex, "label")`
-Marital status|DIMARR [Need recoding]|`{r} attr(elsaw$dimarr, "label")`
+Marital status|DIMARR |`{r} attr(elsaw$dimarr, "label")`
 Household type (Remove other)| hhdtypb|`{r} attr(elsaw$hhdtypb, "label")`
 Social class – NS-SEC | W10NSSEC5|`{r} attr(elsaw$w10nssec5, "label")`
 Main activity ..retired/employed etc (Remove Other)| WPDES|`{r} attr(elsaw$wpdes, "label")`
@@ -373,68 +371,61 @@ Life expectancy expectation | EXLO80|`{r}  attr(elsaw$exlo80, "label")`
 Volunteering | ERFVOL|`{r}  attr(elsaw$erfvol, "label")`
 Caring responsibility| |`{r}  attr(elsaw$ervol, "label")`
 Civic engagement|SCORGPO|`{r}  attr(elsaw$scorgpo, "label")`
-Weights | w10w1lwgt | Wave 10 Longitudinal weight (wave 1 base)"                                      
-Weights | w10w4lwgt | Wave 10 Longitudinal weight (wave 4 base)"                                      
 Weights |w10xwgt | Wave 10 cross-sectional weight"                                                   
-Weights |w10scwt | Wave 10 main self-completion weight"  
 
 
-- Interest in politics
-- Values
-
-
+<!-- Weights | w10w1lwgt | Wave 10 Longitudinal weight (wave 1 base)"                                       -->
+<!-- Weights | w10w4lwgt | Wave 10 Longitudinal weight (wave 4 base)"                                       -->
+<!-- Weights |w10scwt | Wave 10 main self-completion weight"   -->
 <!-- - Other activities: WPACT -->
-
-
+  
+  
 ## 2. Variables recoding 
-
+  
 ### Recoding schemes:
-
+  
 1. Household type (HHDTYPB):
-
-- Single person (adult) households
-- Families (large + small)
-- 2 adults households
-- Large adults HH
+  
+  - Single person (adult) households 
+  - Families (large + small)
+  - 2 adults households
+  - Large adults HH
 
 
 2. Marital status (DIMARR)
 
-- Single/never married
-- Married
-- Separated/dicvorced/widowed
+  - Single/never married
+  - Married
+  - Separated/dicvorced/widowed
 
 3. Employment status (WPDES)
 
-- Retired + looking after family/home
-- In employment 
-- Long term sick + unemployed
+  - Retired + looking after family/home
+  - In employment 
+  -  Long term sick + unemployed
 
 4. Highest qualification (EDQUAL)
 
-- Detailed version
+  - Detailed version
+  
+    - Degree or equivalent 
+    - Higher ed below degree
+    - A level or equivalent
+    - GCSE or equivalent
+    - Foreign
+    - No qualification
 
-  - Degree or equivalent 
-  - Higher ed below degree
-  - A level or equivalent
-  - GCSE or equivalent
-  - Foreign
-  - No qualification
+  - Short version
+  
+    - Higher education 
+    - Secondary education
+    - Foreign
+    - No qualification
 
-- Short version
-
-  - Higher education 
-  - Secondary education
-  - Foreign
-  - No qualification
-
-
-
-#### ELSA fieldwork dates
 
 |Name|Fieldwork|Sample|Of which core|Vote asked|Last GE
 |----|---------|-----------|-------|------|-------:
-Wave 1 | 2002-03 | 12,100|11,391|Yes|June 2001 
+  Wave 1 | 2002-03 | 12,100|11,391|Yes|June 2001 
 Wave 2 |2004/05 |9,432|8,780|No|June 2001
 Wave 3 |2006/07 |9,771|8,810|Yes|May 2005
 Wave 4 |2008/09 |11,050|9,886|No|May 2005
@@ -444,341 +435,981 @@ Wave 7 |2014/15 |9,666,|8,249|No|May 2010
 Wave 8 |2016/17 |8,445| 7,223|Yes|May 2015
 Wave 9|2018/19 |8,736| 7,289|Yes|June 2017
 Wave 10|2021-23|-|-|Yes|Dec. 2019
+:Table 1: *ELSA fieldwork dates*
+  Source: ELSA Wave 9 report, Table 1.1; Wikipedia.
 
-Source: ELSA Wave 9 report, Table 1.1; Wikipedia.
 
-
-
-### Recoding notes and issues
+#### Recoding notes and issues
 
 - There is potentially a large drop in the number of  obsersations resulting from  combining the voting records across waves: `{r} prettyNum(length(!is.na(elsaw$VotGE19)[!is.na(elsaw$VotGE01) | !is.na(elsaw$VotGE05) | !is.na(elsaw$VotGE15) | !is.na(elsaw$VotGE15)]),big.mark = ",")`. For this reason, missing values were coded as 0. As a result there may be a need to add a control for British vs non British citizenship. 
 - Ethnic has `{r} prettyNum(table(is.na(elsaw$ethnic))[2],big.mark = ",")` missing values. I do not recommend using it.
 
 
-
-
-## 3. Preliminary multivariate results
-
-Confidence intervals removed for readability.
-
-### 3.1 Unweighted regression results
-
-```{r multiv}
-#| output: asis
-elsaw$edqual4.fr<-relevel(elsaw$edqual4.fr,ref=4)
-elsaw$wpdes5.fr<-relevel(elsaw$wpdes5.fr,ref=2)
-elsaw$VotRec0.f<-relevel(elsaw$VotRec0.f,ref=3)
-elsaw$VotRec01.f<-relevel(elsaw$VotRec01.f,ref=3)
-elsaw$srh4.fr<-relevel(elsaw$srh4.fr,ref=1)
-attr(elsaw$edqual4.fr,"label")<-"Educational level"
-attr(elsaw$wpdes5.fr,"label")<-"Economic activity"
-attr(elsaw$VotRec0.f,"label")<-"Past voting record, v1"
-attr(elsaw$VotRec01.f,"label")<-"Past voting record, v2"
-attr(elsaw$srh4.fr,"label")<-"Self-rated health"
-attr(elsaw$indsex.fr,"label")<-"Sex"
-attr(elsaw$AgeCat3.fr,"label")<-"Age"
-attr(elsaw$srh4.fr,"label")<-"*Self-rated health*"
-
-reg<-list()
-
-reg[["a11"]]<-glm((VotGE19.fr) ~ VotRec0.f,
-                  elsaw,family=binomial())%>% tbl_regression(exponentiate = TRUE, digits=1)
-
-reg[["a12"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr,
-                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
-
-reg[["a13"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr+
-                    AgeCat3.fr,
-                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
-
-reg[["a14"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr+
-                    AgeCat3.fr+
-                    edqual4.fr,
-                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
-
-
-reg[["a15"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr+
-                    AgeCat3.fr+
-                    edqual4.fr+
-                    wpdes5.fr,
-                  elsaw,family=binomial())%>%   tbl_regression(exponentiate = TRUE, digits=1)
-
-reg[["a16"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr+
-                    AgeCat3.fr+
-                    edqual4.fr+
-                    wpdes5.fr+
-                    srh4.fr,
-                  elsaw,family=binomial())%>% tbl_regression(exponentiate = TRUE, digits=1)
-
-reg[["a17"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr*
-                    AgeCat3.fr+
-                    edqual4.fr+
-                    wpdes5.fr+
-                    srh4.fr,
-                  elsaw,family=binomial())%>%  tbl_regression(exponentiate = TRUE, digits=1)
-
-
-
-tbl_merge(tbls=reg,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**"))|> 
-  modify_column_hide(columns = c(conf.low_1,conf.low_2,conf.low_3,conf.low_4,conf.low_5,conf.low_6,conf.low_7,conf.high_1,conf.high_2,conf.high_3,conf.high_4,conf.high_5,conf.high_6,conf.high_7))
-
-```
-#### Model 7, unweighted
-
-```{r plot}
-reg[["a17"]]|>plot()
-
-```
-
-### 3.2 Weighted regression results
-
-```{r multiv_w}
-#| output: asis
-
-regw<-list()
-
-regw[["a11"]]<-glm((VotGE19.fr) ~ VotRec0.f,
-                    weights=w10xwgt,
-                  elsaw,family=binomial())%>% tbl_regression(exponentiate = TRUE, digits=1)
-
-regw[["a12"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr,
-                    weights=w10xwgt,
-                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
-
-regw[["a13"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr+
-                    AgeCat3.fr,
-                    weights=w10xwgt,
-                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
-
-regw[["a14"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr+
-                    AgeCat3.fr+
-                    edqual4.fr,
-                    weights=w10xwgt,
-                  elsaw,family=binomial())%>%tbl_regression(exponentiate = TRUE, digits=1)
-
-
-regw[["a15"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr+
-                    AgeCat3.fr+
-                    edqual4.fr+
-                    wpdes5.fr,
-                  weights=w10xwgt,
-                  elsaw,family=binomial())%>%   tbl_regression(exponentiate = TRUE, digits=1)
-
-regw[["a16"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr+
-                    AgeCat3.fr+
-                    edqual4.fr+
-                    wpdes5.fr+
-                    srh4.fr,
-                    weights=w10xwgt,
-                  elsaw,family=binomial())%>% tbl_regression(exponentiate = TRUE, digits=1)
-
-regw[["a17"]]<-glm((VotGE19.fr) ~ VotRec0.f+
-                    indsex.fr*
-                    AgeCat3.fr+
-                    edqual4.fr+
-                    wpdes5.fr+
-                    srh4.fr,
-                   weights=w10xwgt,
-                  elsaw,family=binomial())%>%  tbl_regression(exponentiate = TRUE, digits=1)
-
-
-
-tbl_merge(tbls=regw,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**"))|> 
-  modify_column_hide(columns = c(conf.low_1,conf.low_2,conf.low_3,conf.low_4,conf.low_5,conf.low_6,conf.low_7,conf.high_1,conf.high_2,conf.high_3,conf.high_4,conf.high_5,conf.high_6,conf.high_7))
-
-```
-#### Model 7, weighted
-
-```{r plot_w}
-regw[["a17"]]|>plot()
-
-```
-
-## Appendix 1 Preliminary univariate and bivariate results
+## 3. Univariates results
 
 Results are presented as follows, under each tab below:
+  
+  1.  Unweighted frequencies and proportions of the original variables, unrecoded
+  2.  Weighted frequencies and proportions of the recoded (ie missing/invalid values removed) variables
 
-- Weighted frequencies and proportions of the original variables
-- Weighted frequencies and proportions of the recoded (ie missing/invalid values removed) variables
-- Contingency table of the variable with voting behaviour at Wave 10
-- Chi-Squared test of independence.
+Please note that in the case of newly derived variable 1. and 2. will be identical 
 
-
-::: panel-tabset
+::: {.panel-tabset}
 
 
 ```{r univariates}
 #| results: asis
 #| echo: false
 
+
 vars<-c(ivs,"wpdes5","edqual4","dimarr4", "hhdtypb4","VotRec0","VotRec01")
 
 elsaw.s<-svydesign(~1,weights=~w10xwgt,data=elsaw)
 
-# Apply the function to all  varsiables 
+# Apply the function to all  variables 
 rslt.u <- lapply(vars, ufreq)
 rslt.r <- lapply(vars, wfreq)
 rslt.c <- lapply(vars, wfreq.r)
 
 
-# Print the tables for each dependent varsiable using kable for better formatting
+# Print the tables for each dependent variable using kable for better formatting
 for (i in 1:length(rslt.c)) {
-cat('\n')
-cat('# ', vars[i], '\n')
-#print(knitr::kable(vars[i],"html"))
-
-cat('\n')
-cat(paste0("#### ** Unweighted frequency table of unrecoded *",vars[i],"* **"))
-cat('\n')
+   cat('### ', vars[i], '\n')
   
-print(knitr::kable(rslt.u[[i]],"html"))
+    cat(paste0("#### **Unweighted frequency table of unrecoded *",vars[i],"* **", '\n'))
+    print(knitr::kable(rslt.u[[i]]),'html')
+    cat('\n')
+    
+    cat(paste0("#### **Weighted frequency table of unrecoded *",vars[i],"* **", '\n'))
+    print(knitr::kable(rslt.r[[i]]),'html')
+     cat('\n')
+     
+    cat(paste0("#### **Weighted frequency table of recoded *",vars[i],"* **", '\n'))
+    print(knitr::kable(rslt.c[[i]]),'html')
+    cat('\n')
 
-cat('\n')
-
-################################################################################################
-
-cat(paste0("#### **Weighted frequency table of unrecoded *",vars[i],"* **"))
-cat('\n')
-  
-print(knitr::kable(rslt.r[[i]],"html"))
-
-cat('\n')
-cat(paste0("#### **Weighted frequency table of recoded *",vars[i],"* **"))
-cat('\n')
-
-print(knitr::kable(rslt.c[[i]],"html"))
-
-################################################################################################
-
-cat('\n\n')
-cat(paste0("#### **Contingency table of  whether voted at the 2019 GE by ",vars[i],"* **"))
-cat('\n')
-print(kable(colPct(svytable(as.formula(paste0("~", vars[i],".fr","+VotGE19.fr")), elsaw.s))))
-
-t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ VotGE19.fr")), elsaw.s)
-
-print(t$method)
-cat('\n')
-print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
-cat('\n')
-
-################################################################################################
-
-
-cat('\n\n')
-if(vars[i]!="indsex"){
-cat(paste0("#### **Contingency table of  Sex by *",vars[i],"* **"))
-cat('\n')
-print(kable(colPct(svytable(as.formula(paste0("~indsex.fr+", vars[i],".fr")), elsaw.s))))
-
-
-t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ indsex.fr")), elsaw.s)
-
-print(t$method)
-cat('\n')
-print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
-
-cat('\n')
-}
-cat('\n\n')
-
-cat(paste0("#### **Contingency table of  Age (2 cat) by *",vars[i],"* **"))
-cat('\n')
-print(kable(colPct(svytable(as.formula(paste0("~AgeCat2.fr+", vars[i],".fr")), elsaw.s))))
-
-t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ AgeCat2.fr")), elsaw.s)
-
-print(t$method)
-cat('\n')
-print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
-
-cat('\n')
-
-cat('\n\n')
-cat(paste0("#### **Contingency table of  Age (3 cat) by *",vars[i],"* **"))
-cat('\n')
-print(kable(colPct(svytable(as.formula(paste0("~AgeCat3.fr+", vars[i],".fr")), elsaw.s))))
-
-t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ AgeCat3.fr")), elsaw.s)
-
-print(t$method)
-cat('\n')
-print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
-
-cat('\n')
-
-
-}
-
-cat('\n\n')
+    }
+cat('\n:::')
 ```
 
-::: 
 
 
 
-<!-- ############################################################################################ -->
-<!-- <!-- ## Variable search --> -->
+## 4. Bivariates results
 
-<!-- # vlab.m<-"" -->
-<!-- # for (vr in names(elsaw)) { -->
-<!-- # vlab.m<-c(vlab.m,paste(vr,attr(elsaw[[vr]],"label"),sep="----")) -->
-<!-- # } -->
-<!-- #  -->
-<!-- # vlab0<-"" -->
-<!-- # for (vr in names(elsa0)) { -->
-<!-- # vlab0<-c(vlab0,paste(vr,attr(elsa0[[vr]],"label"),sep="----")) -->
-<!-- # } -->
-<!-- #  -->
-<!-- # vlab.e1<-"" -->
-<!-- # for (vr in names(elsa1)) { -->
-<!-- # vlab.e1<-c(vlab.e1,paste(vr,attr(elsa1[[vr]],"label"),sep="----")) -->
-<!-- # } -->
-<!-- #  -->
-<!-- # vlab.e3<-"" -->
-<!-- # for (vr in names(elsa3)) { -->
-<!-- # vlab.e3<-c(vlab.e3,paste(vr,attr(elsa3[[vr]],"label"),sep="----")) -->
-<!-- # } -->
-<!-- #  -->
-<!-- # vlab.e8<-"" -->
-<!-- # for (vr in names(elsa8)) { -->
-<!-- # vlab.e8<-c(vlab.e8,paste(vr,attr(elsa8[[vr]],"label"),sep="----")) -->
-<!-- # } -->
-<!-- #  -->
-<!-- #  -->
-<!-- # res.voted1<-grep("voted",vlab.e1,fixed=TRUE,value=T) 12-->
-<!-- # res.voted3<-grep("voted",vlab.e3,fixed=TRUE,value=T) -->
-<!-- # res.voted8<-grep("voted",vlab.e8,fixed=TRUE,value=T) -->
-<!-- #  -->
-<!-- # res.age<-grep(" age",vlab.m,fixed=TRUE,value=T) -->
-<!-- # res.voted10<-grep("voted",vlab.m,fixed=TRUE,value=T) -->
-<!-- # res.class<-grep("class",vlab.m,value=T) -->
-<!-- # res.activ<-grep("activity",vlab.m,value=T) -->
+This section contains, for each variable listed below:
+
+  1. Contingency table with voting behaviour at Wave 10 with Chi-Squared test of independence.
+  2. Contingency table with sex
+  3. Contingency table with age, two categories
+  4. Contingency table with sex, three categories
+
+All contingency tables were computed with weighted data.
+
+::: {.panel-tabset}
+
+```{r biv}
+#| results: asis
+#| echo: false
 
 
-<!-- - Income (declies?) IASICK -->
+for (i in 1:length(rslt.c)) {
+  
+   cat('### ', vars[i], '\n')
+ 
+  cat(paste0("#### **Contingency table of  whether voted at the 2019 GE by ",vars[i],"* **"))
 
-<!-- 6168	scorgpo	F2		Numeric -->
-<!-- 6169	scorgnw	F2	Whether is a member of tenants groups, resident groups, neighbourhoold watch	Numeric -->
-<!-- 6170	scorgrl	F2	Whether is a member of a church or other religious group	Numeric -->
-<!-- 6171	scorgch	F2	Whether is a member of charitable associations	Numeric -->
-<!-- 6172	scorged	F2	Whether is a member of education, arts or music groups or evening classes	Numeric -->
-<!-- 6173	scorgsc	F2	Whether is a member of social clubs	Numeric -->
-<!-- 6174	scorgsp	F2	Whether is a member of sports clubs, gyms, exercise classes	Numeric -->
-<!-- 6175	scorg95	F2	Whether is a member of other organisations, club or societies	Numeric -->
-<!-- 6176	scorg96	F2	Respondent is not a member of any organisations, clubs or societies	Numeric -->
-<!-- 6177	scorgn	F2	Number of committee meetings attends in a year	Numeric -->
+  tmp.t<-svytable(as.formula(paste0("~", vars[i],".fr+VotGE19.fr")), elsaw.s)
+  tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
+  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p)
+  rownames(tmp.p)<-c("",rownames(tmp.t))
+  names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
+  
+  print(kable(
+    tmp.p
+  ),'html')
+  
+  cat('\n')
+  
+  t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ VotGE19.fr")), elsaw.s)
+  
+  print(t$method)
+  cat('\n')
+  print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+  cat('\n')
+  
+  ################################################################################################
+  
+  
+  if(vars[i]!="indsex"){
+
+    cat(paste0("#### **Contingency table of  Sex by *",vars[i],"* **"))
+    cat('\n')
+    
+    tmp.t<-svytable(as.formula(paste0("~", vars[i],".fr+indsex.fr")), elsaw.s)
+    tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
+    tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p)
+    rownames(tmp.p)<-c("",rownames(tmp.t))
+    names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
+    
+    print(kable(tmp.p))
+    cat('\n')
+    
+    t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ indsex.fr")), elsaw.s)
+    
+    print(t$method)
+    cat('\n')
+    print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+    
+    cat('\n')
+  }
+
+  cat(paste0("#### **Contingency table of  Age (2 cat) by *",vars[i],"* **"))
+  cat('\n')
+  
+  tmp.t<-svytable(as.formula(paste0("~", vars[i],".fr+AgeCat2.fr")), elsaw.s)
+  tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
+  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p)
+  rownames(tmp.p)<-c("",rownames(tmp.t))
+  names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
+  
+  print(kable(tmp.p))
+  cat('\n')
+  
+  
+  t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ AgeCat2.fr")), elsaw.s)
+  print(t$method)
+  cat('\n')
+  
+  print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+  cat('\n')
+  
+  cat(paste0("#### **Contingency table of  Age (3 cat) by *",vars[i],"* **"))
+  cat('\n')
+  tmp.t<-svytable(as.formula(paste0("~", vars[i],".fr+AgeCat3.fr")), elsaw.s)
+  tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
+  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p)
+  rownames(tmp.p)<-c("",rownames(tmp.t))
+  names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
+  
+  print(kable(tmp.p))
+  cat('\n')
+  
+  
+  t<-svychisq(as.formula(paste0("~", vars[i],".fr","+ AgeCat3.fr")), elsaw.s)
+  
+  print(t$method)
+  cat('\n')
+  print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+  
+  cat('\n')
+}
+cat('\n:::')
+```
 
 
 
+
+## 5. Further descriptives
+  
+This section presents:
+
+- Unweighted three way tables of age (two categories) and sex by whether voted at the 2019 general elections
+
+- Cross-sectional proportions of 50+ who cast their ballot at the GE, by election year, sex and age 
+
+###  5.1 Whether voted at  the 2019 GE by gender and age bands
+
+#### Sample description
+
+```{r desc}
+#| output: asis
+
+print(kable(
+round((table(Age=elsaw$AgeCat2.fr,Sex=elsaw$indsex.fr,"Voted"=elsaw$VotGE19.fr))) 
+),'html')
+```
+
+####  Weighted estimates:
+
+- Women:
+```{r descw}
+#| output: asis
+
+print(kable(
+rbind(
+    rowPct(svytable(~VotGE19.fr+AgeCat2.fr+indsex.fr,design = elsaw.s)[,,2]),
+    c(100,100)
+    )
+)
+)
+```
+
+- Men:
+
+```{r descm}
+#| output: asis
+
+print(kable(
+rbind(
+rowPct(svytable(~VotGE19.fr+AgeCat2.fr+indsex.fr,design = elsaw.s)[,,1]),
+    c(100,100)
+    )
+)
+)
+```
+
+### 5.2 Voting pattern by age, sex and general election
+
+
+```{r plotge}
+#| fig-width: 12
+#| fig-height: 10
+
+for(ds in names(voted)) {
+  voted[[ds]]<-voted[[ds]] |>mutate(AgeCat3.f=as.factor(case_when(
+    indager>=50 & indager<70 ~ "50-69",
+    indager>=70 & indager<80 ~ "70-79",
+    indager>=80  ~ "80+"
+  )))
+}
+
+results<-list()
+des <- list(
+  GE01 = svydesign(ids = ~1, weights = ~w1wgt, data=voted[["GE01"]] |>filter(!is.na(w1wgt))),
+  GE05 = svydesign(ids = ~1, weights = ~w3xwgt, data=voted[["GE05"]] |>filter(!is.na(w3xwgt))),
+  GE15 = svydesign(ids = ~1, weights = ~w8xwgt, data=voted[["GE15"]] |>filter(!is.na(w8xwgt))),
+  GE17 = svydesign(ids = ~1, weights = ~w9xwgt, data=voted[["GE17"]] |>filter(!is.na(w9xwgt))),
+  GE19 = svydesign(ids = ~1, weights = ~w10xwgt, data=voted[["GE19"]] |>filter(!is.na(w10xwgt)))
+)
+
+for(ds in names(des)) {
+  age_est <- svyby(~I(Wvot == 1), ~AgeCat3.f, des[[ds]], svymean, vartype = "ci", keep.var = TRUE)
+  names(age_est)[1]<-"Category"
+  #  age_est$Category <- "AGE"
+  #  age_est$Level <- as.factor(age_est$AGE)
+  age_est<-age_est|>select(Category,"I(Wvot == 1)TRUE","ci_l.I(Wvot == 1)TRUE","ci_u.I(Wvot == 1)TRUE"  )
+  age_est$Dataset <- ds
+  
+  # Proportion by SEX
+  sex_est <- svyby(~I(Wvot == 1), ~as_factor(indsex), des[[ds]], svymean, vartype = "ci", keep.var = TRUE)
+  names(sex_est)[1]<-"Category"
+  sex_est<-sex_est|>select(Category,"I(Wvot == 1)TRUE","ci_l.I(Wvot == 1)TRUE","ci_u.I(Wvot == 1)TRUE"  )
+  sex_est$Dataset <- ds
+  
+  # Combine
+  results[[ds]] <- rbind(age_est, sex_est)
+}  
+
+plot_data <- bind_rows(results)
+plot_data[,2:4]<-round(plot_data[,2:4]*100,1)
+plot_data$Dataset<-as.factor(plot_data$Dataset)
+levels(plot_data$Dataset)<-c(2001,2005,2015,2017,2019)
+# Rename columns for ggplot
+plot_data <- plot_data |>
+  rename(Proportion = `I(Wvot == 1)TRUE`,
+         CI_low = `ci_l.I(Wvot == 1)TRUE`,
+         CI_high = `ci_u.I(Wvot == 1)TRUE`)
+
+# Plotting
+ggplot(plot_data, aes(x = Category, y = Proportion, group = Dataset)) +
+  #  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = CI_low, ymax = CI_high), size=.9, width = 0.2) +
+  geom_text(aes(label = Proportion), hjust = -.5, size = 4) +
+  facet_wrap(~Dataset) +
+  labs(title = "Proportion who voted at the last general election, by age and sex",
+       x = "General Election Year",
+       y = "Percent voted with 95% CIs",
+       caption="Weighted cross-sectional estimates, ELSA Waves 1, 3, 8, 9, 10 data") +
+  theme_minimal() +
+  theme(strip.text = element_text(size = 18),
+        axis.text.x = element_text(size = 14),
+        axis.text.y = element_text(size = 14),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        plot.caption=element_text(hjust = 0),
+        plot.title.size=element_text(size = 18))
+```
+
+
+
+
+## 6. Multivariate results
+
+This section presents the results of four series of logistic regressions models of voting behaviour at the 2019 general elections:
+  
+1. Stepwise models including voting behaviour recorded at previous waves, and socio-economic characteristics
+2. Stepwise models including  socio-economic characteristics only
+3. Stepwise models including self-rated health, self-rated mental abilities, self-rated memory, financial situation, sense of loneliness, presence of an internet  connection, involvement in volunteering socio economic characteristiscs, and socio-economic characteristics
+4. As 3. above,  alongside voting behaviour recorded at previous waves
+
+All models we fitted using weights.
+
+::: {.panel-tabset}
+
+<!-- ### 5.1 Unweighted regression results - voting behaviour included -->
+  
+  <!-- This series of stepwise models explores the association between socio-demographic variables on voting behaviour at Wave 10 without using weights.  -->
+  
+  <!--```{r multiv} -->
+  <!-- #| output: asis -->
+  <!-- elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(hhdtypb4.fr) & !is.na(dimarr4.fr) &  -->
+                                 <!--                         !is.na(edqual4.fr)& !is.na(wpdes5.fr) & !is.na(srh4.fr)) -->
+  <!-- reg<-list() -->
+  
+  <!-- reg[["a11"]]<-glm(VotGE19.fr ~ VotRec0.f, -->
+                           <!--                   elsaw.r,family=binomial())|> tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a12"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
+                           <!--                     indsex.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a13"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
+                           <!--                     indsex.fr+AgeCat3.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a13a"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
+                            <!--                     indsex.fr+AgeCat3.fr+hhdtypb4.fr, -->
+                            <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a14"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
+                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a15"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
+                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+ -->
+                           <!--                     edqual4.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  
+  <!-- reg[["a16"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
+                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+ -->
+                           <!--                     edqual4.fr+wpdes5.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>   tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a17"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
+                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+ -->
+                           <!--                     edqual4.fr+wpdes5.fr+ -->
+                           <!--                     srh4.fr, -->
+                           <!--                   elsaw.r,family=binomial())|> tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a18"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
+                           <!--                     indsex.fr*AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+ -->
+                           <!--                     edqual4.fr+wpdes5.fr+ -->
+                           <!--                     srh4.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>  tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  
+  
+  <!-- tbl_merge(tbls=reg,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**", "**M8**", "**M8**")) -->
+  <!-- # |>  -->
+  <!-- #   modify_column_hide(columns =  -->
+  <!-- #                      c(conf.low_1,conf.low_2,conf.low_3,conf.low_4,conf.low_5,conf.low_6,conf.low_7,conf.low_8,conf.low_9, -->
+  <!-- # conf.high_1,conf.high_2,conf.high_3,conf.high_4,conf.high_5,conf.high_6,conf.high_7,conf.high_8,conf.high_9)) -->
+  
+  <!--``` -->
+  <!-- #### Coefficient plot of  Model 9 -->
+  
+  <!--```{r plot} -->
+  <!-- #| fig-width: 12 -->
+  <!-- #| fig-height: 10 -->
+  <!-- reg[["a18"]]|>plot() -->
+  
+  <!--``` -->
+  
+### 6.1 Models with socio-economic variables, including past voting behaviour
+
+
+#### Stepwise models
+
+```{r multiv_w}
+#| output: asis
+elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(hhdtypb4.fr) & !is.na(dimarr4.fr) &
+                          !is.na(edqual4.fr)& !is.na(wpdes5.fr) & !is.na(VotRec0.f) & !is.na(w10xwgt) & !is.na(VotGE19.fr )) 
+
+regw<-list()
+
+regw[["a11"]]<-glm(VotGE19.fr ~ VotRec0.f,
+                   weights=w10xwgt,
+                   elsaw.r,family=binomial())|> 
+  tbl_regression(exponentiate = TRUE, digits=1) |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a12"]]<-glm(VotGE19.fr ~ VotRec0.f+
+                     indsex.fr,
+                   weights=w10xwgt,
+                   elsaw.r,family=binomial())|> 
+  tbl_regression(exponentiate = TRUE, digits=1) |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+regw[["a13"]]<-glm(VotGE19.fr ~ VotRec0.f+
+                     indsex.fr+AgeCat3.fr,
+                   weights=w10xwgt,
+                   elsaw.r,family=binomial())|>
+  tbl_regression(exponentiate = TRUE, digits=1) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+regw[["a13a"]]<-glm(VotGE19.fr ~ VotRec0.f+
+                      indsex.fr+AgeCat3.fr+hhdtypb4.fr,
+                    weights=w10xwgt,
+                    elsaw.r,family=binomial())|>
+  tbl_regression(exponentiate = TRUE, digits=1) |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a14"]]<-glm(VotGE19.fr ~ VotRec0.f+
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr,
+                   weights=w10xwgt, 
+                   elsaw.r,family=binomial()) |>
+  tbl_regression(exponentiate = TRUE, digits=1) |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+regw[["a15"]]<-glm(VotGE19.fr ~ VotRec0.f+
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+
+                     edqual4.fr,  weights=w10xwgt,
+                   elsaw.r,family=binomial())|>
+  tbl_regression(exponentiate = TRUE, digits=1) |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+# regw[["a16"]]<-glm(VotGE19.fr ~ VotRec0.f+
+#                      indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+ edqual4.fr+wpdes5.fr, 
+#                      weights=w10xwgt, elsaw.r,family=binomial())|>   
+#                    tbl_regression(exponentiate = TRUE, digits=1) |> 
+#                     add_glance_table(include=c(AIC,logLik,nobs)) |> 
+#                     add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+tmp17<-glm(VotGE19.fr ~ VotRec0.f+
+             indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr,
+           weights=w10xwgt, elsaw.r,family=binomial())|> 
+  tbl_regression(exponentiate = TRUE, digits=1) 
+
+
+regw[["a17"]]<- tmp17 |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+
+tmp18<-glm(VotGE19.fr ~ VotRec0.f+
+             indsex.fr*AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr,
+           weights=w10xwgt, elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = TRUE, digits=1) 
+regw[["a18"]]<- tmp18 |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+tbl_merge(tbls=regw,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**", "**M8**"))
+
+
+```
+#### Coefficient plot of Models 7 & 8
+
+```{r plot_w}
+#| fig-width: 12
+#| fig-height: 10
+
+tmp17 |>plot()
+
+tmp18 |>plot()
+```
+
+
+<!-- ### 4.3 Unweighted regression results - voting behaviour not included -->
+  
+  <!-- This series of stepwise models explores the association between socio-demographic variables and  voting behaviour at Wave 10, not using weights. -->
+  
+  
+  <!-- #### Stepwise models -->
+  
+  <!--```{r multiv.w} -->
+  <!-- #| output: asis -->
+  
+  <!-- reg<-list() -->
+  
+  <!-- #reg[["a11"]]<-glm(VotGE19.fr ~ VotRec0.f, -->
+  <!-- #                  elsaw.r,family=binomial())|> tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a12"]]<-glm(VotGE19.fr ~  -->
+                           <!--                     indsex.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a13"]]<-glm(VotGE19.fr ~  -->
+                           <!--                     indsex.fr+AgeCat3.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a13a"]]<-glm(VotGE19.fr ~  -->
+                            <!--                     indsex.fr+AgeCat3.fr+hhdtypb4.fr, -->
+                            <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  
+  <!-- reg[["a14"]]<-glm(VotGE19.fr ~  -->
+                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a15"]]<-glm(VotGE19.fr ~  -->
+                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+ -->
+                           <!--                     edqual4.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  
+  <!-- reg[["a16"]]<-glm(VotGE19.fr ~  -->
+                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+ -->
+                           <!--                     edqual4.fr+wpdes5.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>   tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a17"]]<-glm(VotGE19.fr ~  -->
+                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+ -->
+                           <!--                     edqual4.fr+wpdes5.fr+ -->
+                           <!--                     srh4.fr, -->
+                           <!--                   elsaw.r,family=binomial())|> tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  <!-- reg[["a18"]]<-glm(VotGE19.fr ~  -->
+                           <!--                     indsex.fr*AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+ -->
+                           <!--                     edqual4.fr+wpdes5.fr+ -->
+                           <!--                     srh4.fr, -->
+                           <!--                   elsaw.r,family=binomial())|>  tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
+  
+  
+  
+  <!-- tbl_merge(tbls=reg,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**", "**M8**")) -->
+  <!-- # |>   modify_column_hide(columns = c(conf.low_1,conf.low_2,conf.low_3,conf.low_4,conf.low_5,conf.low_6,conf.low_7,conf.low_8, -->
+  <!-- # conf.high_1,conf.high_2,conf.high_3,conf.high_4,conf.high_5,conf.high_6,conf.high_7,conf.high_8)) -->
+  
+  <!--``` -->
+  <!-- #### Coefficients plot of Model 8 -->
+  
+  <!--```{r plot.w} -->
+  <!-- #| fig-width: 12 -->
+  <!-- #| fig-height: 10 -->
+  
+  <!-- reg[["a18"]]|>plot() -->
+  <!--``` -->
+  
+### 6.2 Models with socio-economic variables, without past voting behaviour
+  
+#### Stepwise models
+  
+```{r multiv_w.w}
+#| output: asis
+
+elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(hhdtypb4.fr) & !is.na(dimarr4.fr) &
+                          !is.na(edqual4.fr)& !is.na(wpdes5.fr)  & !is.na(w10xwgt) & !is.na(VotGE19.fr )) 
+
+regw<-list()
+
+regw[["a12"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr,
+                   weights=w10xwgt,
+                   elsaw.r,family=binomial())|> 
+  tbl_regression(exponentiate = TRUE, digits=1) |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a13"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr,
+                   weights=w10xwgt,
+                   elsaw.r,family=binomial())|>                   
+  tbl_regression(exponentiate = TRUE, digits=1) |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a13a"]]<-glm(VotGE19.fr ~ 
+                      indsex.fr+AgeCat3.fr+hhdtypb4.fr,
+                    weights=w10xwgt,
+                    elsaw.r,family=binomial())|>                  
+  tbl_regression(exponentiate = TRUE, digits=1) |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a14"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr,
+                   weights=w10xwgt,
+                   elsaw.r,family=binomial())|>
+  tbl_regression(exponentiate = TRUE, digits=1) |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a15"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+
+                     edqual4.fr,
+                   weights=w10xwgt,
+                   elsaw.r,family=binomial())|>
+  tbl_regression(exponentiate = TRUE, digits=1) |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+
+# regw[["a16"]]<-glm(VotGE19.fr ~
+#                      indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+
+#                      edqual4.fr+wpdes5.fr,
+#                    weights=w10xwgt,
+#                    elsaw.r,family=binomial())|>   
+#                     tbl_regression(exponentiate = TRUE, digits=1) |>                   
+#                     add_glance_table(include=c(AIC,logLik,nobs)) |> 
+#                     add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+tmp17<-glm(VotGE19.fr ~ 
+             indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+
+             edqual4.fr+wpdes5.fr,
+           weights=w10xwgt,
+           elsaw.r,family=binomial()) |>
+  tbl_regression(exponentiate = TRUE, digits=1) 
+
+
+
+regw[["a17"]] <- tmp17 |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+tmp18<-glm(VotGE19.fr ~ 
+             indsex.fr*AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+
+             edqual4.fr+wpdes5.fr,
+           weights=w10xwgt,
+           elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = TRUE, digits=1) 
+
+regw[["a18"]] <- tmp18 |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+
+
+tbl_merge(tbls=regw,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**","**M6**", "**M7**"))
+
+```
+
+#### Coefficients plot of Models 7 & 8
+
+```{r plot_w.w}
+#| fig-width: 12
+#| fig-height: 10
+
+tmp17 |>plot()
+
+tmp18 |>plot()
+
+```
+
+### 6.3 Models with extra covariates, no past voting behaviour
+
+#### Stepwise models
+
+```{r extrav}
+#| output: asis
+
+elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(hhdtypb4.fr) & !is.na(dimarr4.fr) &
+                          !is.na(edqual4.fr)& !is.na(wpdes5.fr) & !is.na(srh4.fr) &
+                          !is.na(cfmap.fr)& !is.na(cfmetm.fr)& !is.na(iafcon4.fr)& !is.na(pscede.fr) &
+                          !is.na(hobb.fr) & !is.na(erfvol.f) & !is.na(w10xwgt) & !is.na(VotGE19.fr ))  
+
+
+regw<-list()
+
+
+regw[["a11"]]<-glm((VotGE19.fr) ~
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr+
+                     srh4.fr,
+                   weights=w10xwgt,elsaw.r,family=binomial()) |>  
+  tbl_regression(exponentiate = TRUE, 
+                 digits=1,
+                 include = srh4.fr) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a12"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr
+                   +srh4.fr+cfmap.fr,
+                   weights=w10xwgt, elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = TRUE, 
+                 digits=1, 
+                 include = c("srh4.fr","cfmap.fr")) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a13"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr+
+                     srh4.fr+cfmap.fr+cfmetm.fr,
+                   weights=w10xwgt, elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = TRUE, 
+                 digits=1,                  
+                 include = c("srh4.fr","cfmap.fr","cfmetm.fr")) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+
+regw[["a14"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+ edqual4.fr+wpdes5.fr+
+                     srh4.fr +cfmap.fr+cfmetm.fr+iafcon4.fr,
+                   weights=w10xwgt,elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = T, 
+                 digits=1,
+                 include = c("srh4.fr","cfmap.fr","cfmetm.fr","iafcon4.fr")) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a15"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr+
+                     srh4.fr +cfmap.fr+cfmetm.fr+iafcon4.fr+pscede.fr,
+                   weights=w10xwgt, elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = TRUE, 
+                 digits=1,
+                 include = c("srh4.fr","cfmap.fr","cfmetm.fr","iafcon4.fr","pscede.fr")) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a16"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr+
+                     srh4.fr +cfmap.fr+cfmetm.fr+iafcon4.fr+pscede.fr+hobb.fr,
+                   weights=w10xwgt,elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = T, 
+                 digits=1,
+                 include = c("srh4.fr","cfmap.fr","cfmetm.fr","iafcon4.fr","pscede.fr","hobb.fr")) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+tmp17<-glm(VotGE19.fr ~ 
+             indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr+
+             srh4.fr +cfmap.fr+cfmetm.fr+iafcon4.fr+pscede.fr+hobb.fr+erfvol.fr,
+           weights=w10xwgt,elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = T, 
+                 digits=1, 
+                 include =c("srh4.fr","cfmap.fr","cfmetm.fr","iafcon4.fr","pscede.fr","hobb.fr","erfvol.fr")) 
+
+regw[["a17"]] <- tmp17 |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+
+
+tbl_merge(tbls=regw,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**"))
+```
+
+
+
+
+#### Coefficients plot of Model 7
+
+```{r plot_extrav}
+#| fig-width: 12
+#| fig-height: 10
+tmp17 |>plot()
+```
+
+### 6.4 Models with extra covariates, including past voting behaviour
+
+#### Stepwise models
+
+```{r extrav2}
+#| output: asis
+
+elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(hhdtypb4.fr) & !is.na(dimarr4.fr) &
+                          !is.na(edqual4.fr)& !is.na(wpdes5.fr) & !is.na(srh4.fr) &
+                          !is.na(cfmap.fr)& !is.na(cfmetm.fr)& !is.na(iafcon4.fr)& !is.na(pscede.fr) &
+                          !is.na(hobb.fr) & !is.na(erfvol.f) & !is.na(w10xwgt) & !is.na(VotRec0.f) & !is.na(VotGE19.fr ))  
+
+
+regw<-list()
+
+
+regw[["a11"]]<-glm((VotGE19.fr) ~
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr+
+                     srh4.fr,
+                   weights=w10xwgt,elsaw.r,family=binomial()) |>  
+  tbl_regression(exponentiate = TRUE, 
+                 digits=1,
+                 include = srh4.fr) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a12"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr
+                   +srh4.fr+cfmap.fr,
+                   weights=w10xwgt, elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = TRUE, 
+                 digits=1, 
+                 include = c("srh4.fr","cfmap.fr")) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a13"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr+
+                     srh4.fr+cfmap.fr+cfmetm.fr,
+                   weights=w10xwgt, elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = TRUE, 
+                 digits=1,                  
+                 include = c("srh4.fr","cfmap.fr","cfmetm.fr")) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+
+regw[["a14"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+ edqual4.fr+wpdes5.fr+
+                     srh4.fr +cfmap.fr+cfmetm.fr+iafcon4.fr,
+                   weights=w10xwgt,elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = T, 
+                 digits=1,
+                 include = c("srh4.fr","cfmap.fr","cfmetm.fr","iafcon4.fr")) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a15"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr+
+                     srh4.fr +cfmap.fr+cfmetm.fr+iafcon4.fr+pscede.fr,
+                   weights=w10xwgt, elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = TRUE, 
+                 digits=1,
+                 include = c("srh4.fr","cfmap.fr","cfmetm.fr","iafcon4.fr","pscede.fr")) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+regw[["a16"]]<-glm(VotGE19.fr ~ 
+                     indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr+
+                     srh4.fr +cfmap.fr+cfmetm.fr+iafcon4.fr+pscede.fr+hobb.fr,
+                   weights=w10xwgt,elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = T, 
+                 digits=1,
+                 include = c("srh4.fr","cfmap.fr","cfmetm.fr","iafcon4.fr","pscede.fr","hobb.fr")) |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+tmp17<-glm(VotGE19.fr ~ 
+             indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr+
+             srh4.fr +cfmap.fr+cfmetm.fr+iafcon4.fr+pscede.fr+hobb.fr+erfvol.fr,
+           weights=w10xwgt,elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = T, 
+                 digits=1, 
+                 include =c("srh4.fr","cfmap.fr","cfmetm.fr","iafcon4.fr","pscede.fr","hobb.fr","erfvol.fr")) 
+
+regw[["a17"]] <- tmp17 |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+tmp18<-glm(VotGE19.fr ~ 
+             indsex.fr+AgeCat3.fr+hhdtypb4.fr+dimarr4.fr+edqual4.fr+wpdes5.fr+
+             srh4.fr +cfmap.fr+cfmetm.fr+iafcon4.fr+pscede.fr+hobb.fr+erfvol.fr+
+             VotRec0.f,
+           weights=w10xwgt,elsaw.r,family=binomial())|>  
+  tbl_regression(exponentiate = T, 
+                 digits=1, 
+                 include =c("srh4.fr","cfmap.fr","cfmetm.fr","iafcon4.fr","pscede.fr","hobb.fr","erfvol.fr","VotRec0.f")) 
+
+regw[["a18"]] <- tmp18 |> 
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+
+
+tbl_merge(tbls=regw,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**", "**M8**"))
+```
+
+#### Coefficients plot of Model 7
+
+```{r plot_extrav2}
+#| fig-width: 12
+#| fig-height: 10
+tmp18 |>plot()
+```
+:::
+  
+  
+  
+  
+  
+  
+  <!--   ############################################################################################ -->
+  <!--  ## Variable search -->
+  
+  
+  
+  <!--   vlab.m<-"" -->
+  <!-- for (vr in names(elsaw)) { -->
+      <!--   vlab.m<-c(vlab.m,paste(vr,attr(elsaw[[vr]],"label"),sep="----")) -->
+        <!-- } -->
+  
+  <!-- vlab0<-"" -->
+  <!-- for (vr in names(elsa0)) { -->
+      <!--   vlab0<-c(vlab0,paste(vr,attr(elsa0[[vr]],"label"),sep="----")) -->
+        <!-- } -->
+  
+  <!-- vlab.e1<-"" -->
+  <!-- for (vr in names(elsa1)) { -->
+      <!--   vlab.e1<-c(vlab.e1,paste(vr,attr(elsa1[[vr]],"label"),sep="----")) -->
+        <!-- } -->
+  
+  <!-- vlab.e3<-"" -->
+  <!-- for (vr in names(elsa3)) { -->
+      <!--   vlab.e3<-c(vlab.e3,paste(vr,attr(elsa3[[vr]],"label"),sep="----")) -->
+        <!-- } -->
+  
+  <!--    vlab.e5<-"" -->
+  <!--    for (vr in names(elsa5)) { -->
+      <!--       <!-- vlab.e5<-c(vlab.e5,paste(vr,attr(elsa5[[vr]],"label"),sep="----")) -->
+        <!--         <!-- } -->
+  <!--   # -->
+  <!--   vlab.e8<-"" -->
+  <!-- for (vr in names(elsa8)) { -->
+      <!--   vlab.e8<-c(vlab.e8,paste(vr,attr(elsa8[[vr]],"label"),sep="----")) -->
+        <!-- } -->
+  
+  <!-- vlab.e10<-"" -->
+  <!-- for (vr in names(elsa10)) { -->
+      <!--   vlab.e10<-c(vlab.e10,paste(vr,attr(elsa10[[vr]],"label"),sep="----")) -->
+        <!-- } -->
+  
+  
+  
+  <!-- res.voted1<-grep("voted",vlab.e1,fixed=TRUE,value=T)  -->
+  <!-- res.voted3<-grep("voted",vlab.e3,fixed=TRUE,value=T) -->
+  <!-- res.voted5<-grep("voted",vlab.e5,fixed=TRUE,value=T) -->
+  <!-- res.voted8<-grep("voted",vlab.e8,fixed=TRUE,value=T) -->
+  
+  <!-- res.age<-grep(" age",vlab.m,fixed=TRUE,value=T) -->
+  <!-- res.voted10<-grep("voted",vlab.m,fixed=TRUE,value=T) -->
+  <!-- res.class<-grep("class",vlab.m,value=T) -->
+  <!-- res.activ<-grep("activity",vlab.m,value=T) -->
+  
+  
+  <!--  - Income (declies?) IASICK --> 
+  
+  <!--    6168	scorgpo	F2		Numeric -->
+  <!--    6169	scorgnw	F2	Whether is a member of tenants groups, resident groups, neighbourhoold watch	Numeric -->
+  <!--    6170	scorgrl	F2	Whether is a member of a church or other religious group	Numeric -->
+  <!--    6171	scorgch	F2	Whether is a member of charitable associations	Numeric -->
+  <!--    6172	scorged	F2	Whether is a member of education, arts or music groups or evening classes	Numeric -->
+  <!--    6173	scorgsc	F2	Whether is a member of social clubs	Numeric -->
+  <!--    6174	scorgsp	F2	Whether is a member of sports clubs, gyms, exercise classes	Numeric -->
+  <!--    6175	scorg95	F2	Whether is a member of other organisations, club or societies	Numeric -->
+  <!--    6176	scorg96	F2	Respondent is not a member of any organisations, clubs or societies	Numeric -->
+  <!--    6177	scorgn	F2	Number of committee meetings attends in a year	Numeric -->
+  
