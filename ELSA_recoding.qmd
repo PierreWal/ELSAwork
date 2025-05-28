@@ -584,7 +584,7 @@ for (i in 1:length(rslt.c)) {
   print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
   cat('\n')
   
-  cat(paste0("#### **Contingency table of  Age (3 cat) by *",vars[i],"* **"))
+  cat(paste0("#### Contingency table of  Age (3 cat) by *",vars[i],"* "))
   cat('\n')
   tmp.t<-svytable(as.formula(paste0("~", vars[i],".fr+AgeCat3.fr")), elsaw.s)
   tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
