@@ -37,6 +37,7 @@ library(gtsummary)
 library(ggplot2)
 
 datadir<-"~/Data/bes/"
+setwd("~/Dropbox/work/ELSAwork/ELSAwork/")
 bes23<-read_dta(paste0(datadir,"BES2019_W23_v25.0.dta"))
 
 
@@ -240,21 +241,13 @@ ivs<-c(
 
 ivars<-c(ivs,bvars)
 
-vars<-c(
-"AgeCat2.f", "AgeCat3.f",
-"dimarr4.f", "disab.f", "edqual4.f", "ethnic.f",  "gender.f",
-"hhdtypb4.f", "nssec.f","relig.f",   "VotGE05.f", "VotGE10.f", 
-"VotGE15.f","VotGE17.f","VotGE19.f",  "VotRec0", "wpdes4.f" 
-)
+vars<-c(ivars,"VotGE19.f")
 
 labs<-list(
-  AgeCat2.f="Age 2 categories",
-  AgeCat3.f="Age 3 categories",
   dimarr4.f="Relationship status",
   disab.f="Whether daily life limited",
   edqual4.f="Highest qualification",
   ethnic.f="Ethnicity",
-  gender.f="Gender",
   hhdtypb4.f="Household type",
   nssec.f="Social class",
   relig.f="Whether religious",
@@ -262,12 +255,15 @@ labs<-list(
   VotGE10.f="Whether voted (GE 2010)",
   VotGE15.f="Whether voted (GE 2015)",
   VotGE17.f="Whether voted (GE 2017)",
-  VotGE19.f="Whether voted (GE 2019)",
   VotRec0="Times voted at previous GE",
-  wpdes4.f="Work + carer status"     
+  wpdes4.f="Work + carer status",
+  AgeCat2.f="Age 2 categories",
+  AgeCat3.f="Age 3 categories",
+  gender.f="Gender"
 )
   
-
+ulabs=labs  
+ulabs[["VotGE19.f"]] <- "Whether voted (GE 2019)"
 
 b23<-b23|>mutate(
   AgeCat2.f=as.factor(case_when(
@@ -411,14 +407,14 @@ rslt.r <- lapply(vars, function(v) wfreq2(v, b23.s) )
 
 # Print the tables for each dependent variable using kable for better formatting
 for (i in 1:length(rslt.u)) {
-  cat('### ', labs[[i]], '\n')
+  cat('### ', ulabs[[i]], '\n')
   
-  cat(paste0("#### Unweighted frequency table of *",labs[i],"*", '\n'))
+  cat(paste0("#### Unweighted frequency table of *",ulabs[i],"*", '\n'))
 #  print(knitr::kable(rslt.u[[i]]),'html')
   print(rslt.u[[i]])
   cat('\n')
   
-  cat(paste0("#### Weighted frequency table of *",labs[i],"*", '\n'))
+  cat(paste0("#### Weighted frequency table of *",ulabs[i],"*", '\n'))
   print(rslt.r[[i]])
   cat('\n')
   
@@ -457,8 +453,8 @@ for (i in 1:length(ivars)) {
   
   tmp.t<-svytable(as.formula(paste0("~VotGE19.f+", ivars[i])), b23.s)
   tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
-  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p)
-  rownames(tmp.p)<-c("",rownames(tmp.t))
+  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p,colSums(tmp.p))
+  rownames(tmp.p)<-c("",rownames(tmp.t),"Total")
   names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
   
   print(kable(
@@ -478,14 +474,13 @@ for (i in 1:length(ivars)) {
   
   
   if(ivars[i]!="gender.f"){
-    
-    cat(paste0("#### Contingency table of  Sex by *",labs[i],"*"))
+   cat(paste0("#### **Contingency table of *", labs[i],"* by Sex"  ))
     cat('\n')
     
-    tmp.t<-svytable(as.formula(paste0("~", ivars[i],"+gender.f")), b23.s)
+    tmp.t<-svytable(as.formula(paste0("~ gender.f +", ivars[i])), b23.s)
     tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
-    tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p)
-    rownames(tmp.p)<-c("",rownames(tmp.t))
+    tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p,colSums(tmp.p))
+    rownames(tmp.p)<-c("",rownames(tmp.t),"Total")
     names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
     
     print(kable(tmp.p))
@@ -501,21 +496,20 @@ for (i in 1:length(ivars)) {
   }
 
 if(ivars[i]!="AgeCat2.f"){
-    
-  cat(paste0("#### Contingency table of  Age (2 cat) by *",labs[i],"*"))
+  cat(paste0("#### **Contingency table of *", labs[i],"* by Age (2 cat)"  ))
   cat('\n')
   
-  tmp.t<-svytable(as.formula(paste0("~", ivars[i],"+AgeCat2.f")), b23.s)
+  tmp.t<-svytable(as.formula(paste0("~AgeCat2.f+", ivars[i])), b23.s)
   tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
-  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p)
-  rownames(tmp.p)<-c("",rownames(tmp.t))
+  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p,colSums(tmp.p))
+  rownames(tmp.p)<-c("",rownames(tmp.t),"Total")
   names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
   
   print(kable(tmp.p))
   cat('\n')
   
   
-  t<-svychisq(as.formula(paste0("~", ivars[i],"+ AgeCat2.f")), b23.s)
+  t<-svychisq(as.formula(paste0("~","AgeCat2.f+",ivars[i])), b23.s)
   print(t$method)
   cat('\n')
   
@@ -524,20 +518,19 @@ if(ivars[i]!="AgeCat2.f"){
   }
   
   if(ivars[i]!="AgeCat3.f"){
-    
-  cat(paste0("#### **Contingency table of  Age (3 cat) by *",labs[i],"*"))
+  cat(paste0("#### **Contingency table of *", labs[i],"* by Age (3 cat)"  ))
   cat('\n')
-  tmp.t<-svytable(as.formula(paste0("~", ivars[i],"+AgeCat3.f")), b23.s)
+  tmp.t<-svytable(as.formula(paste0("~ AgeCat3.f+", ivars[i])), b23.s)
   tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
-  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p)
-  rownames(tmp.p)<-c("",rownames(tmp.t))
+  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p,colSums(tmp.p))
+  rownames(tmp.p)<-c("",rownames(tmp.t),"Total")
   names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
   
   print(kable(tmp.p))
   cat('\n')
   
   
-  t<-svychisq(as.formula(paste0("~", ivars[i],"+ AgeCat3.f")), b23.s)
+  t<-svychisq(as.formula(paste0("~","AgeCat3.f + ", ivars[i])), b23.s)
   
   print(t$method)
   cat('\n')

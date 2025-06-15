@@ -1,0 +1,23 @@
+---
+title: "Untitled"
+format: html
+---
+
+```{r}
+library(DT)
+```
+
+```{r, include=FALSE}
+# Init Step to make sure that the dependencies are loaded
+htmltools::tagList(datatable(mtcars))
+```
+
+::: {.panel-tabset}
+```{r}
+#| results: asis
+for(i in 1:2) {
+  cat(sprintf("\n### table no. %d\n\n", i))
+  print(htmltools::tagList(datatable(mtcars)))
+}
+```
+:::
