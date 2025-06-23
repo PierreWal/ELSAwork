@@ -549,27 +549,20 @@ elsaw.s<-svydesign(~1,weights=~w10xwgt,data=elsaw)
 
 rslt.u<-  lapply(c(uvars,dvars), function(v) vfreq(v, elsaw))
 
-rslt.r <- lapply(c(uvars,dvars), function(v) wfreq2(v, elsaw.s) )
+rslt.r <- lapply(c(rvars,dvars), function(v) wfreq2(v, elsaw.s) )
 
-
-# rslt.u <- lapply(uvars, ufreq)
-# rslt.r <- lapply(vars, wfreq)
-# rslt.c <- lapply(vars, wfreq.r)
 
 
 # Print the tables for each dependent variable using kable for better formatting
 for (i in 1:length(rslt.u)) {
    cat('### ', labs[[i]], '\n')
   
-    cat(paste0("#### **Unweighted frequency table of unrecoded *",uvars[i],"* **", '\n'))
+    cat(paste0("#### **Unweighted frequency table of unrecoded *",c(uvars,dvars)[i],"* **", '\n'))
     print(rslt.u[[i]])
     cat('\n')
     
-    # cat(paste0("#### **Weighted frequency table of unrecoded *",uvars[i],"* **", '\n'))
-    # print(knitr::kable(rslt.r[[i]]),'html')
-    #  cat('\n')
-     
-    cat(paste0("#### **Weighted frequency table of recoded *", uvars[i],"* **", '\n'))
+
+    cat(paste0("#### **Weighted frequency table of recoded *", c(rvars,dvars)[i],"* **", '\n'))
     print(rslt.r[[i]])
     cat('\n')
 
@@ -762,7 +755,7 @@ This section presents:
 #| output: asis
 
 print(kable(
-round((table(Age=elsaw$AgeCat2.fr,Sex=elsaw$indsex.fr,"Marital status"=elsaw$dimarr.fr, "Voted"=elsaw$VotGE19.fr))) 
+round((table(Age=elsaw$AgeCat2.fr,Sex=elsaw$indsex.fr, "Voted"=elsaw$VotGE19.fr))) 
 ),'html')
 ```
 
