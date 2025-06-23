@@ -219,7 +219,7 @@ elsaw<-elsaw|>mutate(
     indager>=50 & indager<70 ~ "50-69",
     indager>=70 ~ "70+"
   )),
-  AgeCat3.fr=as.ordered(case_when(
+  AgeCat3.fr=as.factor(case_when(
     indager>=50 & indager<70 ~ "50-69",
     indager>=70 & indager<80 ~ "70-79",
     indager>=80  ~ "80+"
@@ -960,6 +960,8 @@ All models we fitted using weights.
  elsaw$hhdtypb.fr<-relevel(elsaw$hhdtypb.fr,ref=5)
  elsaw$edqual.fr<-relevel(elsaw$edqual.fr,ref=3)
  elsaw$wpdes.fr<-relevel(elsaw$wpdes.fr,ref=4)
+ elsaw$AgeCat3.fr<-relevel(elsaw$AgeCat3.fr,ref=1)
+ elsaw$VotRec0.fr<-relevel(as.factor(elsaw$VotRec0.fr),ref=3)
 
 
 elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(hhdtypb.fr) & !is.na(dimarr.fr) &
