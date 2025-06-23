@@ -1,5 +1,5 @@
 tfactor<-function(v){
-  droplevels(as_factor(v,"both"))
+  droplevels(as_factor(v,"both",ordered=T))
 }
 
 lookfor<-function(name,dset){
@@ -41,7 +41,7 @@ ufreq <- function(x,dat) {
     Frequencies = round(as.vector(freq_table), 1),
     Percent = round(as.vector(percents), 1)
   )
-  names(result)[1]<-labs[[x]]
+  names(result)[1]<-labs[[paste0(x,"")]]
 
     # Return the result
   return(result)
@@ -50,9 +50,6 @@ ufreq <- function(x,dat) {
 
 vfreq <- function(var, dat) {
   # Load required packages
-  if (!requireNamespace("dplyr", quietly = TRUE)) stop("Please install the 'dplyr' package.")
-  if (!requireNamespace("knitr", quietly = TRUE)) stop("Please install the 'knitr' package.")
-
   # Ensure variable exists
   if (!var %in% names(dat)) {
     stop(paste("Variable", var, "not found in the dataset."))
@@ -124,10 +121,7 @@ wfreq.r <- function(var) {
 
 wfreq2 <- function(var, dat.s) {
   # Load required packages
-  if (!requireNamespace("survey", quietly = TRUE)) stop("Please install the 'survey' package.")
-  if (!requireNamespace("dplyr", quietly = TRUE)) stop("Please install the 'dplyr' package.")
-  if (!requireNamespace("knitr", quietly = TRUE)) stop("Please install the 'knitr' package.")
-  
+
   # Ensure variable exists
   if (!var %in% names(dat.s$variables)) {
     stop(paste("Variable", var, "not found in the survey design object."))
