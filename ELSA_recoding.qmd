@@ -972,77 +972,8 @@ All models we fitted using weights.
 
 ::: {.panel-tabset}
 
-<!-- ### 5.1 Unweighted regression results - voting behaviour included -->
-  
-  <!-- This series of stepwise models explores the association between socio-demographic variables on voting behaviour at Wave 10 without using weights.  -->
-  
-  <!--```{r multiv} -->
-  <!-- #| output: asis -->
-  <!-- elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(hhdtypb.fr) & !is.na(dimarr.fr) &  -->
-                                 <!--                         !is.na(edqual.fr)& !is.na(wpdes.fr) & !is.na(hehelf.fr)) -->
-  <!-- reg<-list() -->
-  
-  <!-- reg[["a11"]]<-glm(VotGE19.fr ~ VotRec0.f, -->
-                           <!--                   elsaw.r,family=binomial())|> tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a12"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
-                           <!--                     indsex.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a13"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
-                           <!--                     indsex.fr+AgeCat3.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a13a"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
-                            <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr, -->
-                            <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a14"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
-                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a15"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
-                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr+ -->
-                           <!--                     edqual.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  
-  <!-- reg[["a16"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
-                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr+ -->
-                           <!--                     edqual.fr+wpdes.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>   tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a17"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
-                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr+ -->
-                           <!--                     edqual.fr+wpdes.fr+ -->
-                           <!--                     hehelf.fr, -->
-                           <!--                   elsaw.r,family=binomial())|> tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a18"]]<-glm(VotGE19.fr ~ VotRec0.f+ -->
-                           <!--                     indsex.fr*AgeCat3.fr+hhdtypb.fr+dimarr.fr+ -->
-                           <!--                     edqual.fr+wpdes.fr+ -->
-                           <!--                     hehelf.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>  tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  
-  
-  <!-- tbl_merge(tbls=reg,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**", "**M8**", "**M8**")) -->
-  <!-- # |>  -->
-  <!-- #   modify_column_hide(columns =  -->
-  <!-- #                      c(conf.low_1,conf.low_2,conf.low_3,conf.low_4,conf.low_5,conf.low_6,conf.low_7,conf.low_8,conf.low_9, -->
-  <!-- # conf.high_1,conf.high_2,conf.high_3,conf.high_4,conf.high_5,conf.high_6,conf.high_7,conf.high_8,conf.high_9)) -->
-  
-  <!--``` -->
-  <!-- #### Coefficient plot of  Model 9 -->
-  
-  <!--```{r plot} -->
-  <!-- #| fig-width: 12 -->
-  <!-- #| fig-height: 10 -->
-  <!-- reg[["a18"]]|>plot() -->
-  
-  <!--``` -->
-  
-### 6.1 Models with socio-economic variables, including past voting behaviour
+
+### 6.1 Models with socio-economic variables, including turnout at previous GE
 
 
 #### Stepwise models
@@ -1154,79 +1085,7 @@ tmp17 |>plot()
 tmp18 |>plot()
 ```
 
-
-<!-- ### 4.3 Unweighted regression results - voting behaviour not included -->
-  
-  <!-- This series of stepwise models explores the association between socio-demographic variables and  voting behaviour at Wave 10, not using weights. -->
-  
-  
-  <!-- #### Stepwise models -->
-  
-  <!--```{r multiv.w} -->
-  <!-- #| output: asis -->
-  
-  <!-- reg<-list() -->
-  
-  <!-- #reg[["a11"]]<-glm(VotGE19.fr ~ VotRec0.fr, -->
-  <!-- #                  elsaw.r,family=binomial())|> tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a12"]]<-glm(VotGE19.fr ~  -->
-                           <!--                     indsex.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a13"]]<-glm(VotGE19.fr ~  -->
-                           <!--                     indsex.fr+AgeCat3.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a13a"]]<-glm(VotGE19.fr ~  -->
-                            <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr, -->
-                            <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  
-  <!-- reg[["a14"]]<-glm(VotGE19.fr ~  -->
-                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a15"]]<-glm(VotGE19.fr ~  -->
-                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr+ -->
-                           <!--                     edqual.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  
-  <!-- reg[["a16"]]<-glm(VotGE19.fr ~  -->
-                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr+ -->
-                           <!--                     edqual.fr+wpdes.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>   tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a17"]]<-glm(VotGE19.fr ~  -->
-                           <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr+ -->
-                           <!--                     edqual.fr+wpdes.fr+ -->
-                           <!--                     hehelf.fr, -->
-                           <!--                   elsaw.r,family=binomial())|> tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  <!-- reg[["a18"]]<-glm(VotGE19.fr ~  -->
-                           <!--                     indsex.fr*AgeCat3.fr+hhdtypb.fr+dimarr.fr+ -->
-                           <!--                     edqual.fr+wpdes.fr+ -->
-                           <!--                     hehelf.fr, -->
-                           <!--                   elsaw.r,family=binomial())|>  tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() -->
-  
-  
-  
-  <!-- tbl_merge(tbls=reg,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**", "**M8**")) -->
-  <!-- # |>   modify_column_hide(columns = c(conf.low_1,conf.low_2,conf.low_3,conf.low_4,conf.low_5,conf.low_6,conf.low_7,conf.low_8, -->
-  <!-- # conf.high_1,conf.high_2,conf.high_3,conf.high_4,conf.high_5,conf.high_6,conf.high_7,conf.high_8)) -->
-  
-  <!--``` -->
-  <!-- #### Coefficients plot of Model 8 -->
-  
-  <!--```{r plot.w} -->
-  <!-- #| fig-width: 12 -->
-  <!-- #| fig-height: 10 -->
-  
-  <!-- reg[["a18"]]|>plot() -->
-  <!--``` -->
-  
-### 6.2 Models with socio-economic variables, without past voting behaviour
+### 6.2 Models with SEV, without turnout at previous GE
   
 #### Stepwise models
   
@@ -1348,7 +1207,7 @@ tmp18 |>plot()
 
 ```
 
-### 6.3 Models with extra covariates, no past voting behaviour
+### 6.3 Models with SEV and independent variables, no turnout at previous GE
 
 #### Stepwise models
 
@@ -1483,7 +1342,7 @@ tmp18 |>plot()
 
 ```
 
-### 6.4 Models with extra covariates, including past voting behaviour
+### 6.4 Models with SEVs and IVs, and turnout at previous GE
 
 #### Stepwise models
 

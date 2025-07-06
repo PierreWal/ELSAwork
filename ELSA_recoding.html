@@ -16467,16 +16467,16 @@ window.Quarto = {
 </section>
 <section id="multivariate-results" class="level2">
 <h2 class="anchored" data-anchor-id="multivariate-results">6. Multivariate results</h2>
-<p>This section presents the results of four series of logistic regressions models of voting behaviour at the 2019 general elections:</p>
+<p>This section presents the results of four series of stepwise logistic regressions models of voter turnout at the 2019 general elections:</p>
 <ol type="1">
-<li>Stepwise models including voting behaviour recorded at previous waves, and socio-economic characteristics</li>
-<li>Stepwise models including socio-economic characteristics only</li>
-<li>Stepwise models including self-rated health, self-rated mental abilities, self-rated memory, financial situation, sense of loneliness, presence of an internet connection, involvement in volunteering socio economic characteristiscs, and socio-economic characteristics</li>
-<li>As 3. above, alongside voting behaviour recorded at previous waves</li>
+<li>Including turnout at previous GE, and socio-economic variables (+interaction of age and sex)</li>
+<li>Including SEV (+interaction of age and sex) only</li>
+<li>Including SEV (+interaction of age and sex) as well as independent variables: self-rated health, self-rated mental abilities, self-rated memory, financial situation, sense of loneliness, presence of an internet connection, involvement in volunteering socio economic characteristiscs.</li>
+<li>As 3. above, alongside turnout at previous GE.</li>
 </ol>
 <p>All models we fitted using weights.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-6-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-1" role="tab" aria-controls="tabset-6-1" aria-selected="true" href>6.1 Models with socio-economic variables, including past voting behaviour</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-6-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-2" role="tab" aria-controls="tabset-6-2" aria-selected="false" href>6.2 Models with socio-economic variables, without past voting behaviour</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-6-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-3" role="tab" aria-controls="tabset-6-3" aria-selected="false" href>6.3 Models with extra covariates, no past voting behaviour</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-6-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-4" role="tab" aria-controls="tabset-6-4" aria-selected="false" href>6.4 Models with extra covariates, including past voting behaviour</a></li></ul>
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-6-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-1" role="tab" aria-controls="tabset-6-1" aria-selected="true" href>6.1 Models with socio-economic variables, including turnout at previous GE</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-6-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-2" role="tab" aria-controls="tabset-6-2" aria-selected="false" href>6.2 Models with SEV, without turnout at previous GE</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-6-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-3" role="tab" aria-controls="tabset-6-3" aria-selected="false" href>6.3 Models with SEV and independent variables, no turnout at previous GE</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-6-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-6-4" role="tab" aria-controls="tabset-6-4" aria-selected="false" href>6.4 Models with SEVs and IVs, and turnout at previous GE</a></li></ul>
 <div class="tab-content">
 <div id="tabset-6-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-6-1-tab">
 <section id="stepwise-models" class="level4">
@@ -17604,24 +17604,6 @@ height: 0px !important;
 </div>
 </div>
 </div>
-<!-- ### 4.3 Unweighted regression results - voting behaviour not included -->
-<p><!-- This series of stepwise models explores the association between socio-demographic variables and  voting behaviour at Wave 10, not using weights. --></p>
-<p><!-- #### Stepwise models --></p>
-<p><!--```{r multiv.w} --> <!-- #| output: asis --></p>
-<p><!-- reg<-list() --></p>
-<p><!-- #reg[["a11"]]<-glm(VotGE19.fr ~ VotRec0.fr, --> <!-- #                  elsaw.r,family=binomial())|> tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() --></p>
-<p><!-- reg[["a12"]]<-glm(VotGE19.fr ~  --> <!--                     indsex.fr, --> <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() --></p>
-<p><!-- reg[["a13"]]<-glm(VotGE19.fr ~  --> <!--                     indsex.fr+AgeCat3.fr, --> <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() --></p>
-<p><!-- reg[["a13a"]]<-glm(VotGE19.fr ~  --> <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr, --> <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() --></p>
-<p><!-- reg[["a14"]]<-glm(VotGE19.fr ~  --> <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr, --> <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() --></p>
-<p><!-- reg[["a15"]]<-glm(VotGE19.fr ~  --> <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr+ --> <!--                     edqual.fr, --> <!--                   elsaw.r,family=binomial())|>tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() --></p>
-<p><!-- reg[["a16"]]<-glm(VotGE19.fr ~  --> <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr+ --> <!--                     edqual.fr+wpdes.fr, --> <!--                   elsaw.r,family=binomial())|>   tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() --></p>
-<p><!-- reg[["a17"]]<-glm(VotGE19.fr ~  --> <!--                     indsex.fr+AgeCat3.fr+hhdtypb.fr+dimarr.fr+ --> <!--                     edqual.fr+wpdes.fr+ --> <!--                     hehelf.fr, --> <!--                   elsaw.r,family=binomial())|> tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() --></p>
-<p><!-- reg[["a18"]]<-glm(VotGE19.fr ~  --> <!--                     indsex.fr*AgeCat3.fr+hhdtypb.fr+dimarr.fr+ --> <!--                     edqual.fr+wpdes.fr+ --> <!--                     hehelf.fr, --> <!--                   elsaw.r,family=binomial())|>  tbl_regression(exponentiate = TRUE, digits=1) |> add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) |>add_n() --></p>
-<p><!-- tbl_merge(tbls=reg,tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**", "**M8**")) --> <!-- # |>   modify_column_hide(columns = c(conf.low_1,conf.low_2,conf.low_3,conf.low_4,conf.low_5,conf.low_6,conf.low_7,conf.low_8, --> <!-- # conf.high_1,conf.high_2,conf.high_3,conf.high_4,conf.high_5,conf.high_6,conf.high_7,conf.high_8)) --></p>
-<p><!--``` --> <!-- #### Coefficients plot of Model 8 --></p>
-<p><!--```{r plot.w} --> <!-- #| fig-width: 12 --> <!-- #| fig-height: 10 --></p>
-<p><!-- reg[["a18"]]|>plot() --> <!--``` --></p>
 </section>
 </div>
 <div id="tabset-6-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-6-2-tab">
