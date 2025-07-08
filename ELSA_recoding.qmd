@@ -285,7 +285,7 @@ elsaw<-elsaw|>mutate(
   hehelf.f=as.ordered(case_when(
     hehelf==1  | hehelf==2 ~ "Excel/V good",
     hehelf==3 | hehelf==4 ~ "Good/Fair",
-     hehelf==5  ~ "Fair/poor"
+     hehelf==5  ~ "Poor"
   )),
   hehelf2.f=as.ordered(case_when(
     hehelf==1  | hehelf==2 ~ "Excel/V good",
@@ -863,7 +863,7 @@ for (v in bivars19[-c(1,2)]) {
       AgeCat2.fr_val <- as.character(unique(sub_elsaw$AgeCat2.fr))
       indsex.fr_val <- as.character(unique(sub_elsaw$indsex.fr))
       
-      tab <- table(sub_elsaw[[fn]], sub_elsaw$VotGE19.fr)
+      tab <- table(sub_elsaw$VotGE19.fr,sub_elsaw[[fn]])
       col_totals <- colSums(tab)
       col_perc <- prop.table(tab, 2) * 100
       

@@ -609,7 +609,7 @@ for (v in ivs) {
       AgeCat2.f_val <- as.character(unique(sub_b23$AgeCat2.f))
       indsex.f_val <- as.character(unique(sub_b23$indsex.f))
       
-      tab <- table(sub_b23[[v]], sub_b23$VotGE19.f)
+      tab <- table(sub_b23$VotGE19.f,sub_b23[[v]])
       col_totals <- colSums(tab)
       col_perc <- prop.table(tab, 2) * 100
       
@@ -1155,9 +1155,9 @@ regs4[["a11"]]<-glm((VotGE19.f) ~
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T)
 
 
-regs4[["a12"]]<-glm(VotGE19.f ~
+regs4[["a12"]]<-glm(VotGE19.f ~ VotRec0.f+
                      indsex.f+AgeCat3.f+hhdtypb.f+dimarr.f+edqual.f+wpdes.f
-                   +disab.f+ethnic.f+VotRec0.f,
+                   +disab.f+ethnic.f,
                    weights=wt, b23.r,family=binomial())|>
   tbl_regression(exponentiate = TRUE,
                  digits=1,
@@ -1193,9 +1193,9 @@ regs4[["a14"]]<-glm(VotGE19.f ~
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T)
 
 
-tmp15<-glm(VotGE19.f ~
-             indsex.f+AgeCat3.f+hhdtypb.f+dimarr.f+edqual.f+wpdes.f+
-             +disab.f+ethnic.f+relig.f+nssec.f +VotRec0.f,
+tmp15<-glm(VotGE19.f ~VotRec0.f+
+             indsex.f*AgeCat3.f+hhdtypb.f+dimarr.f+edqual.f+wpdes.f+
+             +disab.f+ethnic.f+relig.f+nssec.f,
            weights=wt,b23.r,family=binomial())|>
   tbl_regression(exponentiate = T,
                  digits=1,
@@ -1214,7 +1214,7 @@ MS4<-tbl_merge(tbls=regs4,
               tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**")) |>
     modify_table_body(~.x |>
                           dplyr::arrange(match(variable,
-                             c("disab.f","ethnic.f", "relig.f", "nssec.f","VotRec0.f","AIC", "logLik", "nobs" ))))
+                             c("disab.f","ethnic.f", "relig.f", "nssec.f","indsex.f*AgeCat3.f", "VotRec0.f","AIC", "logLik", "nobs" ))))
 
 MS4
 
