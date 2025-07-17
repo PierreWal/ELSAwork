@@ -1,6 +1,6 @@
 ---
 title: "ELSA voting patterns study"
-subtitle: Exploratory analysis  - draft version 5
+subtitle: Exploratory analysis  - draft version 6
 author: "Pierre Walthéry"
 date: today
 date-format: DD MMMM YYYY
@@ -21,7 +21,13 @@ execute:
   cache: false
 
 ---
-### *Changes from version 4*
+### *Changes from version 5*
+
+1. Added  digran,erlvolba,erlvolpe,exlo80,exlo90,psagf,sclfcoa,scorgch 
+2. Added a section for descriptives of continuous variables
+3. Consolidated variables list  in Section 1
+
+#### *Changes from version 4*
 1. Recoded general and mental health as: Excellent/Very Good; Good/Fair; Poor. *Warning:  given the small number of obs for 'poor', this is likely to generate unreliable estimates * 
 
 2. Added four way tables of whether voted by age, sex, by all other variables.
@@ -36,8 +42,8 @@ execute:
 
 #### *To do*:
 
-1. Search and add missing variables (Self perceived age; Life Expectancy expectation; Caring responsibility; Interest in politics; Charity association member;  I want to give back to my community; grandchildren.)
-
+1. Search and add missing variables (Interest in politics; contacted MP)
+2. Further regression models
 
 ## Introduction
 This document presents preliminary descriptive,  uni-, bi-   and multivariate analysis   of voting at the 2019 General Elections  among the 50+, using  data from the English Longitudinal Study of Ageing - ELSA at Wave 10.
@@ -60,6 +66,24 @@ library(dplyr)
 library(knitr)
 library(gtsummary)
 library(ggplot2)
+library(weights)
+
+
+avars<-c("AgeCat2.fr", "AgeCat3.fr","cfmap", "cfmetm", "dimarr", "edqual", "erfvol", "ethnic", "exrela", "headlba","headlbe","hehelf", "hhdtypb","hobb","iafcon", "iafind","indsex", "pscedd", "pscede", "scorgpo","scorgrl","spcar",  "sptraa", "tenureb","VotGE01","VotGE05","VotGE15","VotGE17","VotGE19","VotRec0","VotRec01","w10nssec5","wpdes")    
+
+ovars<-c("cfmap", "cfmetm", "digran", "dimarr", "edqual", "erfvol","erlvolba", "erlvolpe", "ethnic","exlo80","exlo90", "exrela", "headlba","headlbe","hehelf", "hhdtypb","hobb","iafcon", "iafind","indsex", "psagf", "pscedd", "pscede","sclfcoa", "scorgch", "scorgpo","scorgrl","spcar",  "sptraa", "tenureb", "VotGE01","VotGE05","VotGE15","VotGE17","VotGE19","w10nssec5","wpdes")    
+
+
+wvars<-c("erfvol", "ethnic", "headlba","headlbe", "hobb", "iafind","indsex", "pscedd", "pscede", "scorgpo","scorgrl", "spcar",  "VotGE01","VotGE05","VotGE15","VotGE17","VotGE19")    
+
+dvars<-c("AgeCat2.fr", "AgeCat3.fr","VotRec0.fr","VotRec01.fr")
+
+uvars<-paste0(ovars,".f")
+rvars<-paste0(ovars,".fr")
+
+bivars19<-c("AgeCat2","AgeCat3", "cfmap", "cfmetm","digran", "dimarr", "edqual", "erfvol", "erlvolba","erlvolpe","ethnic", "exrela", "headlba","headlbe","hehelf", "hhdtypb","hobb","iafcon", "iafind","indsex", "pscedd", "pscede", "sclfcoa",  "scorgch","scorgpo","scorgrl","spcar",  "sptraa", "tenureb","VotGE01","VotGE05","VotGE15","VotGE17","VotRec0","VotRec01","w10nssec5","wpdes")     
+
+      
 
 datadir<-"~/Data/elsa/UKDA-5050-stata/stata/stata13_se/"
 
@@ -135,7 +159,10 @@ datadir<-"~/Data/elsa/UKDA-5050-stata/stata/stata13_se/"
 # 
 # 
 # elsaw<-elsaw|>filter(!is.na(w10xwgt)) |>
-#            select(idauniq,all_of(ivs),exlo80, psagf, exrslf, indager, VotGE19,w10xwgt)
+#            select(idauniq,all_of(ovars),exlo80, psagf, exrslf, indager, VotGE19,w10xwgt)
+# 
+# # elsaw<-elsaw|>filter(!is.na(w10xwgt)) |>
+# #            select(idauniq,all_of(ivs),exlo80, psagf, exrslf, indager, VotGE19,w10xwgt)
 # 
 # # Save the list to an RDS file
 # saveRDS(voted, file = "/home/mscsepw2/Dropbox/work/ELSAwork/data/voted.rds")
@@ -163,29 +190,20 @@ source("functions.R")
 ## Renaming voting variables
 #elsaw$VotGE19<-elsaw$scsptrvt
 
-avars<-c("AgeCat2.fr", "AgeCat3.fr","cfmap", "cfmetm", "dimarr", "edqual", "erfvol", "ethnic", "exrela", "headlba","headlbe","hehelf", "hhdtypb","hobb","iafcon", "iafind","indsex", "pscedd", "pscede", "scorgpo","scorgrl","spcar",  "sptraa", "tenureb","VotGE01","VotGE05","VotGE15","VotGE17","VotGE19","VotRec0","VotRec01","w10nssec5","wpdes")    
-
-ovars<-c("cfmap", "cfmetm", "dimarr", "edqual", "erfvol", "ethnic", "exrela", "headlba","headlbe","hehelf", "hhdtypb","hobb","iafcon", "iafind","indsex", "pscedd", "pscede", "scorgpo","scorgrl","spcar",  "sptraa", "tenureb", "VotGE01","VotGE05","VotGE15","VotGE17","VotGE19","w10nssec5","wpdes")    
-
-
-wvars<-c("erfvol", "ethnic", "headlba","headlbe", "hobb", "iafind","indsex", "pscedd", "pscede", "scorgpo","scorgrl", "spcar",  "VotGE01","VotGE05","VotGE15","VotGE17","VotGE19")    
-
-dvars<-c("AgeCat2.fr", "AgeCat3.fr","VotRec0.fr","VotRec01.fr")
-
-uvars<-paste0(ovars,".f")
-rvars<-paste0(ovars,".fr")
-
-bivars19<-c("AgeCat2","AgeCat3", "cfmap", "cfmetm", "dimarr", "edqual", "erfvol", "ethnic", "exrela", "headlba","headlbe","hehelf", "hhdtypb","hobb","iafcon", "iafind","indsex", "pscedd", "pscede", "scorgpo","scorgrl","spcar",  "sptraa", "tenureb","VotGE01","VotGE05","VotGE15","VotGE17","VotRec0","VotRec01","w10nssec5","wpdes")     
-
 
 labs<-list(
 cfmap.f="Self-rated mental abilities",
 cfmetm.f="Self-rated memory",
+digran.f="Whether has any grandchildren",
 dimarr.f="Marital/relationship status",
 edqual.f="Educational level",
 erfvol.f="Volunteered",
+erlvolba.f="Cared for baby/child",
+erlvolpe.f="Whether cared for a sick/frail person",
 ethnic.f="White vs Non-white",
 exrela.f="Too little money to spend on their needs?",
+exlo80="Expectation (%) that will live to [age]",
+exlo90="Expectation (%) that will live to be 85 years old or more",
 headlba.f="Difficulty bathing or showering",
 headlbe.f="Difficulty getting in and out of bed",
 hehelf.f="Self-reported general health",
@@ -194,9 +212,12 @@ hobb.f="Internet connection?",
 iafcon.f="Financial situation",
 iafind.f="Who has the final say in big financial decisions",
 indsex.f="Sex",
+psagf="Self-perceived age",
 pscedd.f="Whether happy much of the time last  week",
 pscede.f="Feels lonely?",
-scorgpo.f="Whether member of a political party, trade union or environmental groups",
+sclfcoa.f="I want to give back to my community",
+scorgch.f="Whether member of a charity",
+scorgpo.f="Whether member of a party, union or environmental groups",
 scorgrl.f="Whether member of a church or other religious group",
 spcar.f="Whether has use of car/van, as a driver or a passenger",
 sptraa.f="How often respondent uses public transport",
@@ -265,6 +286,10 @@ elsaw<-elsaw|>mutate(
     cfmetm==5 ~ "Poor",
 .default = NA
   )),
+  digran.f=as.ordered(case_when(
+    digran==1  ~ "Has gchild",
+    digran==2 ~ "None"
+  )),
   dimarr.f=as.ordered(case_when(
     dimarr==1  ~ "Single",
     dimarr==2 | dimarr==3 ~ "Married/SP",
@@ -276,6 +301,14 @@ elsaw<-elsaw|>mutate(
     edqual==3 | edqual==4  | edqual==5 ~ "Secondary",
     edqual==6 ~ "Other",
     edqual==7 ~ "Below secondary"
+  )),
+  erlvolpe.f=as.ordered(case_when(
+    erlvolpe==1  ~ "Cared for sick/frail",
+    erlvolpe==0 ~ "Not a carer"
+  )),
+erlvolba.f=as.ordered(case_when(
+    erlvolba==0  ~ "No childcare",
+    erlvolba==1 ~ "Did childcare"
   )),
   exrela.f=as.ordered(case_when(
     exrela==1 |     exrela==2  ~ "Never/rarely",
@@ -305,10 +338,18 @@ elsaw<-elsaw|>mutate(
     iafcon==3   ~ "Get by alright",
     iafcon==4 | iafcon==5 | iafcon==6 ~ "Does not manage well"
   )),
+    sclfcoa.f=as.ordered(case_when(
+    sclfcoa==4 | sclfcoa==5 | sclfcoa==6  ~ "Give back to community",
+    sclfcoa==1 | sclfcoa==2 | sclfcoa==3     ~ "Not so much",
+  )),
     sptraa.f=as.ordered(case_when(
-    sptraa==1 | sptraa==2  ~ "MT once a week",
+    sptraa==1 | sptraa==2  ~ "Several times a week/daily",
     sptraa==3 | sptraa==4     ~ "MT once a month",
     sptraa==5 | sptraa==6  ~ "Monthly or less"
+  )),
+    scorgch.f=as.ordered(case_when(
+    scorgch==1   ~ "Member of a charity",
+    scorgch==0     ~ "Not a member"
   )),
    tenureb.f=as.ordered(case_when(
    tenureb==1   ~ "Owner",
@@ -321,7 +362,6 @@ elsaw<-elsaw|>mutate(
   w10nssec5==3 | w10nssec5==4  ~ "Small emp, lower superv.",
     w10nssec5==5  ~ "Semi-routine/routine"
   )),
-
   wpdes.f=as.ordered(case_when(
     wpdes==1 | wpdes==96 ~ "Retired (inc part)",
     wpdes==2 | wpdes==3~ "In employment",
@@ -382,13 +422,12 @@ names(elsaw)[ncol(elsaw)]<-paste0(hav,".f")
 
 ### Issue with value labels (2)
 levels(elsaw$VotGE05.f)<-c("[-9] Not answered","[-1] Item not applicable","[0] No","[1] Yes")
-
 ```
 
 
 
 ```{r miscrec}
-for(v  in ovars) {
+for(v  in ovars[-c(21,11,10)]) { ### Continuous vars exlo870 & exlo90 removed
 nv<-paste0(v,".fr")
 ov<-paste0(v,".f")
   elsaw<-elsaw|>mutate(nv=
@@ -437,7 +476,7 @@ levels(elsaw$VotGE01.fr)<-c("Didn't vote","Voted")
 
 
 
-for(vr in names(labs)){                        ### Leaving AgeCaat out
+for(vr in names(labs[-19])){                        ### Leaving AgeCaat out
   attr(elsaw[vr],"label")<-labs[[vr]]
   
   # if(vr!="VotRec0.fr" & vr!="VotRec01.fr"){
@@ -456,47 +495,71 @@ levels(elsaw$scorgrl.fr)<-c("No", "Yes")
 
 ## 1. Variables included
 
-|Name|Description|Variable label
-|----|-----------|------------------------------------:
-Age  2 categories  | AgeCat2    | `{r} attr(elsaw$AgeCat80, "label")`
-Age 3 categories  | AgeCat3    | `{r} attr(elsaw$AgeCat85, "label")`
-Sex  | INDSEX    | `{r} attr(elsaw$indsex, "label")`
-Marital status|DIMARR |`{r} attr(elsaw$dimarr, "label")`
-Household type| hhdtypb|`{r} attr(elsaw$hhdtypb, "label")`
-Social class – NS-SEC | W10NSSEC5|`{r} attr(elsaw$w10nssec5, "label")`
-Main economic activity| WPDES|`{r} attr(elsaw$wpdes, "label")`
-Education/highest qualification| EDQUAL|`{r} attr(elsaw$edqual, "label")`
-Ethnicity | ETHNIC|`{r} attr(elsaw$ethnic, "label")`
-Religion | SCORGRL|`{r} attr(elsaw$scorgrl, "label")`
-General Health| HEHELF|`{r} attr(elsaw$hehelf, "label")`
-Mental Health| CFMAP |`{r} attr(elsaw$cfmap, "label")`
-Memory issues| CFMETM|`{r}  attr(elsaw$cfmetm, "label")`
-Past voting behaviour|VotGE1,VotGE3,VotGE8,VotGE9|Voted in  past GE  (from previous waves 1, 3, 8, 9, 10)`
-Voted at the 2019 GE|SCSPTRVT|`{r}  attr(elsaw$scsptrvt, "label")`
-Capacity everyday activities|HEADLB|`{r}  attr(elsaw$headlb, "label")`
-Financial security|IAFCON,IAFINS,EXRELA|`{r}  attr(elsaw$ervol, "label")`
-Control|IAFIND|`{r}  attr(elsaw$iafind, "label")`
-Financial future | EXRSLF|`{r}  attr(elsaw$exrslf, "label")`
-Happiness | PSCEDD|`{r}  attr(elsaw$pscedd, "label")`
-Age perception | PSAGF|`{r}  attr(elsaw$psagf, "label")`
-Social isolation | PSCEDE|`{r}  attr(elsaw$pscede, "label")`
-Use of car | SPCAR|`{r}  attr(elsaw$spcar, "label")`
-Use of public transport | SPTRAA|`{r}  attr(elsaw$sptraa, "label")`
-Lift from friends | SPLIFT|`{r}  attr(elsaw$splift, "label")`
-Grandchildren|DIGRAN |`{r}  attr(elsaw$digran, "label")`
-Internet use | HOBB|`{r}  attr(elsaw$hobb, "label")`
-Life expectancy expectation | EXLO80|`{r}  attr(elsaw$exlo80, "label")`
-Volunteering | ERFVOL|`{r}  attr(elsaw$erfvol, "label")`
-Caring responsibility| |`{r}  attr(elsaw$ervol, "label")`
-Civic engagement|SCORGPO|`{r}  attr(elsaw$scorgpo, "label")`
-Weights |w10xwgt | Wave 10 cross-sectional weight"                                                   
+|Name|Description|Variable label|Valid responses|
+|----|-----------|------------------------------------|-----------:
+Age  2 categories  | AgeCat2    | `{r} attr(elsaw$AgeCat2, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$AgeCat2)))[1],big.mark = ",")` 
+Age 3 categories  | AgeCat3    | `{r} attr(elsaw$AgeCat3, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$AgeCat3)))[1],big.mark = ",")` 
+Mental Health| CFMAP |`{r} attr(elsaw$cfmap, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$cfmap.fr)))[1],big.mark = ",")` 
+Memory issues| CFMETM|`{r}  attr(elsaw$cfmetm, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$cfmetm.fr)))[1],big.mark = ",")` 
+Grandchildren|DIGRAN |`{r}  attr(elsaw$digran, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$digran.fr)))[1],big.mark = ",")` 
+Marital status|DIMARR |`{r} attr(elsaw$dimarr, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$dimarr.fr)))[1],big.mark = ",")` 
+Education/highest qualification| EDQUAL|`{r} attr(elsaw$edqual, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$edqual.fr)))[1],big.mark = ",")` 
+Volunteering | ERFVOL|`{r}  attr(elsaw$erfvol, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$erfvol.fr)))[1],big.mark = ",")` 
+Caring for children  | ERLVOLBA|`{r}  attr(elsaw$erlvolba, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$erlvolba.fr)))[1],big.mark = ",")` 
+Caring for frail/sick  | ERLVOLPE|`{r}  attr(elsaw$erlvolpe, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$erlvolpe.fr)))[1],big.mark = ",")` 
+Life expectancy expectation | EXLO80|`{r}  attr(elsaw$exlo80, "label")` |`{r} prettyNum(as.numeric(table((elsaw$exlo80<0)))[1],big.mark = ",")`
+Life expectancy expectation (85+) | EXLO90|`{r}  attr(elsaw$exlo90, "label")` |`{r} prettyNum(as.numeric(table((elsaw$exlo90<0)))[1],big.mark = ",")` 
+Ethnicity | ETHNIC|`{r} attr(elsaw$ethnic, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$ethnic.fr)))[1],big.mark = ",")` 
+Financial future | EXRSLF|`{r}  attr(elsaw$exrslf, "label")` |`{r} prettyNum(as.numeric(table((elsaw$exrslf<0)))[1],big.mark = ",")` 
+General Health| HEHELF|`{r} attr(elsaw$hehelf, "label")` |`{r} prettyNum(as.numeric(table((elsaw$hehelf.fr)))[1],big.mark = ",")` 
+Household type| HHDTYPB|`{r} attr(elsaw$hhdtypb, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$hhdtypb.fr)))[1],big.mark = ",")` 
+Capacity everyday activities|HEADLBA|`{r}  attr(elsaw$headlba, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$headlba.fr)))[1],big.mark = ",")` 
+Internet use | HOBB|`{r}  attr(elsaw$hobb, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$hobb.fr)))[1],big.mark = ",")` 
+Financial security|IAFCON,IAFINS,EXRELA|`{r}  attr(elsaw$ervol, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$exrela.fr)))[1],big.mark = ",")` 
+Control|IAFIND|`{r}  attr(elsaw$iafind, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$iafind.fr)))[1],big.mark = ",")` 
+Sex  | INDSEX    | `{r} attr(elsaw$indsex, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$indsex.fr)))[1],big.mark = ",")` 
+Perceived age| PSAGF|`{r}  attr(elsaw$psagf, "label")` |`{r} prettyNum(as.numeric(table((elsaw$psagf<0)))[1],big.mark = ",")`  
+Happiness | PSCEDD|`{r}  attr(elsaw$pscedd, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$pscedd.fr)))[1],big.mark = ",")` 
+Social isolation | PSCEDE|`{r}  attr(elsaw$pscede, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$pscede.fr)))[1],big.mark = ",")` 
+Voted at the 2019 GE|SCSPTRVT|- |`{r} prettyNum(as.numeric(table(is.na(elsaw$VotGE19.fr)))[1],big.mark = ",")` 
+Charity membership | SCORGCH|`{r} attr(elsaw$scorgch, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$scorgch.fr)))[1],big.mark = ",")` 
+Civic engagement|SCORGPO|`{r}  attr(elsaw$scorgpo, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$scorgpo.fr)))[1],big.mark = ",")` 
+Religion | SCORGRL|`{r} attr(elsaw$scorgrl, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$scorgrl.fr)))[1],big.mark = ",")` 
+Sense of community | SCLFCOA|`{r} attr(elsaw$sclfcoa, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$sclfcoa.fr)))[1],big.mark = ",")` 
+Use of car | SPCAR|`{r}  attr(elsaw$spcar, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$spcar.fr)))[1],big.mark = ",")` 
+<!-- Lift from friends | SPLIFT|`{r}  attr(elsaw$splift, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$splift.fr)))[1],big.mark = ",")`  -->
+Use of public transport | SPTRAA|`{r}  attr(elsaw$sptraa, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$sptraa.fr)))[1],big.mark = ",")` 
+Past voting behaviour|VotGE1,VotGE3,VotGE8,VotGE9|Voted in  past GE  (from previous waves 1, 3, 8, 9, 10)` 
+Social class – NS-SEC | W10NSSEC5|`{r} attr(elsaw$w10nssec5, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$w10nssec5.fr)))[1],big.mark = ",")` 
+Main economic activity| WPDES|`{r} attr(elsaw$wpdes, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$wpdes.fr)))[1],big.mark = ",")` 
+Weights |w10xwgt | `{r} attr(elsaw$w10xwgt, "label")`      |-
 
+: Table 1: Original and derived variables used in the analysis {tbl-colwidths="[25,5,65,5]"}
 
 <!-- Weights | w10w1lwgt | Wave 10 Longitudinal weight (wave 1 base)"                                       -->
 <!-- Weights | w10w4lwgt | Wave 10 Longitudinal weight (wave 4 base)"                                       -->
 <!-- Weights |w10scwt | Wave 10 main self-completion weight"   -->
 <!-- - Other activities: WPACT -->
   
+
+
+|Name|Fieldwork|Sample|Of which core|Vote asked|Last GE
+|----|---------|-----------|-------|------|-------:
+Wave 1 | 2002-03 | 12,100|11,391|Yes|June 2001 
+Wave 2 |2004/05 |9,432|8,780|No|June 2001
+Wave 3 |2006/07 |9,771|8,810|Yes|May 2005
+Wave 4 |2008/09 |11,050|9,886|No|May 2005
+Wave 5 |2010/11 | 10,274|9,090|No|May 2010
+Wave 6 |2012/13 |10,601|9,169|No|May 2010
+Wave 7 |2014/15 |9,666,|8,249|No|May 2010
+Wave 8 |2016/17 |8,445| 7,223|Yes|May 2015
+Wave 9|2018/19 |8,736| 7,289|Yes|June 2017
+Wave 10|2021-23|-|-|Yes|Dec. 2019
+
+:Table 2: *ELSA fieldwork dates and election turnout variables*
+
+  Source: ELSA Wave 9 report, Table 1.1; Wikipedia.
+
   
 ## 2. Variables recoding 
   
@@ -541,22 +604,6 @@ Weights |w10xwgt | Wave 10 cross-sectional weight"
     - No qualification
 
 
-|Name|Fieldwork|Sample|Of which core|Vote asked|Last GE
-|----|---------|-----------|-------|------|-------:
-  Wave 1 | 2002-03 | 12,100|11,391|Yes|June 2001 
-Wave 2 |2004/05 |9,432|8,780|No|June 2001
-Wave 3 |2006/07 |9,771|8,810|Yes|May 2005
-Wave 4 |2008/09 |11,050|9,886|No|May 2005
-Wave 5 |2010/11 | 10,274|9,090|No|May 2010
-Wave 6 |2012/13 |10,601|9,169|No|May 2010
-Wave 7 |2014/15 |9,666,|8,249|No|May 2010
-Wave 8 |2016/17 |8,445| 7,223|Yes|May 2015
-Wave 9|2018/19 |8,736| 7,289|Yes|June 2017
-Wave 10|2021-23|-|-|Yes|Dec. 2019
-:Table 1: *ELSA fieldwork dates*
-  Source: ELSA Wave 9 report, Table 1.1; Wikipedia.
-
-
 #### Recoding notes and issues
 
 - There is potentially a large drop in the number of  observations resulting from  combining the voting records across waves: `{r} prettyNum(length(!is.na(elsaw$VotGE19)[!is.na(elsaw$VotGE01) | !is.na(elsaw$VotGE05) | !is.na(elsaw$VotGE15) | !is.na(elsaw$VotGE15)]),big.mark = ",")`. For this reason, missing values were coded as 0. As a result there may be a need to add a control for British vs non British citizenship. 
@@ -564,6 +611,7 @@ Wave 10|2021-23|-|-|Yes|Dec. 2019
 - Ethnicity has `{r} prettyNum(table(is.na(elsaw$ethnic))[2],big.mark = ",")` missing values. I do not recommend using it.
 - Same with social class:  `{r} prettyNum(as.numeric(table((elsaw$w10nssec5==-3))[2]),big.mark = ",")` respondents had no job information collected .
 
+- DIGRAN: the number of grandchildren was asked at  Wave 4 then pushed forward (ELSA User Guide Wave 5 p14). As a result, there is large number of missing values at Wave 10.
 
 ## 3. Univariates results
 
@@ -590,27 +638,92 @@ elsaw.s<-svydesign(~1,weights=~w10xwgt,data=elsaw)
 
 # Apply the function to all  variables 
 
-rslt.u<-  lapply(c(uvars,dvars), function(v) vfreq(v, elsaw))
+rslt.u<-  lapply(c(uvars[-c(21,11,10)],dvars), function(v) vfreq(v, elsaw))
 
-rslt.r <- lapply(c(rvars,dvars), function(v) wfreq2(v, elsaw.s) )
+rslt.r <- lapply(c(rvars[-c(21,11,10)],dvars), function(v) wfreq2(v, elsaw.s) )
 
 
 
 # Print the tables for each dependent variable using kable for better formatting
 for (i in 1:length(rslt.u)) {
-   cat('### ', labs[[i]], '\n')
+   cat('### ', labs[[c(uvars[-c(21,11,10)],dvars)[i]]], '\n')
   
-    cat(paste0("#### **Unweighted frequency table of unrecoded *",c(uvars,dvars)[i],"* **", '\n'))
+    cat(paste0("#### **Unweighted frequency table of unrecoded *",c(uvars[-c(21,11,10)],dvars)[i],"* **", '\n'))
     print(rslt.u[[i]])
     cat('\n')
     
 
-    cat(paste0("#### **Weighted frequency table of recoded *", c(rvars,dvars)[i],"* **", '\n'))
+    cat(paste0("#### **Weighted frequency table of recoded *", c(rvars[-c(21,11,10)],dvars)[i],"* **", '\n'))
     print(rslt.r[[i]])
-    cat('\n')
 
-    }
+cat('\n')
+
+}
+
+cat('\n')
+cat('\n')
+cat('### ', labs[["psagf"]], '\n')
+cat('\n')
+ 
+summary(elsaw$psagf) 
+cat('\n')
+
+summary(elsaw$psagf[elsaw$psagf>0])  
+cat('\n')
+
+hist(elsaw$psagf[elsaw$psagf>=0],
+     main=labs[["psagf"]],xlab="Age")
+cat('\n')
+
+wtd.hist(elsaw$psagf[elsaw$psagf>=0 ],
+         weight=elsaw$w10xwgt[elsaw$psagf>=0],
+         main=paste0(labs[["psagf"]], " (weighted)"),xlab="Age")
+cat('\n')
+
+cat('\n')
+cat('\n')
+cat('### ', labs[["exlo80"]], '\n')
+cat('\n')
+
+summary(elsaw$exlo80) 
+cat('\n')
+
+summary(elsaw$exlo80[elsaw$exlo80>0])  
+cat('\n')
+
+hist(elsaw$exlo80[elsaw$exlo80>=0 ],          
+     main=(labs[["exlo80"]]),xlab="Age"
+     )
+cat('\n')
+
+wtd.hist(elsaw$exlo80[elsaw$exlo80>=0 ],
+         weight=elsaw$w10xwgt[elsaw$exlo80>=0],
+        main=paste0(labs[["exlo80"]], " (weighted)"),xlab="Age")
+cat('\n')
+
+cat('\n')
+cat('\n')
+cat('### ', labs[["exlo90"]], '\n')
+ cat('\n')
+
+summary(elsaw$exlo90) 
+cat('\n')
+
+summary(elsaw$exlo90[elsaw$exlo90>0])  
+cat('\n')
+
+hist(elsaw$exlo90[elsaw$exlo90>=0 ],
+         main=labs[["exlo90"]],xlab="Age")
+cat('\n')
+
+wtd.hist(elsaw$exlo90[elsaw$exlo90>=0 ],
+         weight=elsaw$w10xwgt[elsaw$exlo90>=0],
+         main=paste0(labs[["exlo90"]], " (weighted)"),xlab="Age")
+cat('\n')
+
 cat('\n:::')
+cat('\n')
+
 ```
 
 
@@ -622,12 +735,12 @@ This section contains for each variable used in the study, the following conting
 
   1. With voter turnout at the 2019 General Election
   2. With sex
-  4. With age, two and three categories
+  3. With age, two and three categories
 
 All contingency tables were computed with weighted data and include  $\chi^2$ test of independence.
 
 
-### **1. Voter turnout at the 2019 GE **
+### **4.1. Voter turnout at the 2019 GE **
 
 
 ::: {.panel-tabset}
@@ -673,7 +786,7 @@ cat('\n:::')
 
 
 
-### **2. Sex **
+### **4.2. Sex **
 
 ::: {.panel-tabset}
 
@@ -721,7 +834,7 @@ cat('\n:::')
 ```
 
   
-### **3. Age, 2 & 3 categories **
+### **4.3. Age, 2 & 3 categories **
 
 ::: {.panel-tabset}
 
@@ -786,9 +899,11 @@ cat('\n:::')
   
 This section presents:
 
-- Unweighted three way tables of age (two categories) and sex by whether voted at the 2019 general elections
+- Unweighted three way tables of age (two categories) and sex by whether voted at the 2019 general elections. These are unweighted due to the small number of observations for a significant number of categories.
 
-- Cross-sectional proportions of 50+ who cast their ballot at the GE, by election year, sex and age 
+- Plot of cross-sectional (weighted) proportions of 50+ who cast their ballot at the GE, by election year, sex and age 
+
+
 
 <!-- ###  5.1 Whether voted at  the 2019 GE by sex and age bands -->
 
@@ -963,14 +1078,14 @@ ggplot(plot_data, aes(x = Category, y = Proportion, group = Dataset)) +
 
 ## 6. Multivariate results
 
-This section presents the results of four series of stepwise logistic regressions models of voter turnout at the 2019 general elections:
+This section presents the results of four series of stepwise logistic regression models of voter turnout at the 2019 general election:
   
 1. Including turnout at previous GE, and socio-economic variables (+interaction of age and sex)
 2. Including  SEV (+interaction of age and sex) only
 3. Including  SEV (+interaction of age and sex)  as well as  independent variables: self-rated health, self-rated mental abilities, self-rated memory, financial situation, sense of loneliness, presence of an internet  connection, involvement in volunteering socio economic characteristiscs.
 4. As 3. above,  alongside turnout at previous GE.
 
-All models we fitted using weights.
+All models were fitted using weights.
 
 ::: {.panel-tabset}
 
