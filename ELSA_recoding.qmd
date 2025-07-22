@@ -527,15 +527,15 @@ Civic engagement|SCORGPO|`{r}  attr(elsaw$scorgpo, "label")` |`{r} prettyNum(as.
 Religion | SCORGRL|`{r} attr(elsaw$scorgrl, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$scorgrl.fr)))[1],big.mark = ",")` 
 Sense of community | SCLFCOA|`{r} attr(elsaw$sclfcoa, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$sclfcoa.fr)))[1],big.mark = ",")` 
 Use of car | SPCAR|`{r}  attr(elsaw$spcar, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$spcar.fr)))[1],big.mark = ",")` 
-<!-- Lift from friends | SPLIFT|`{r}  attr(elsaw$splift, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$splift.fr)))[1],big.mark = ",")`  -->
 Use of public transport | SPTRAA|`{r}  attr(elsaw$sptraa, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$sptraa.fr)))[1],big.mark = ",")` 
 Past voting behaviour|VotGE1,VotGE3,VotGE8,VotGE9|Voted in  past GE  (from previous waves 1, 3, 8, 9, 10)` 
 Social class – NS-SEC | W10NSSEC5|`{r} attr(elsaw$w10nssec5, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$w10nssec5.fr)))[1],big.mark = ",")` 
 Main economic activity| WPDES|`{r} attr(elsaw$wpdes, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$wpdes.fr)))[1],big.mark = ",")` 
 Weights |w10xwgt | `{r} attr(elsaw$w10xwgt, "label")`      |-
 
-: Table 1: Original and derived variables used in the analysis {tbl-colwidths="[25,5,65,5]"}
+:Table 1: Original and derived variables used in the analysis {tbl-colwidths="[25,5,65,5]"}
 
+<!-- Lift from friends | SPLIFT|`{r}  attr(elsaw$splift, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$splift.fr)))[1],big.mark = ",")`  -->
 <!-- Weights | w10w1lwgt | Wave 10 Longitudinal weight (wave 1 base)"                                       -->
 <!-- Weights | w10w4lwgt | Wave 10 Longitudinal weight (wave 4 base)"                                       -->
 <!-- Weights |w10scwt | Wave 10 main self-completion weight"   -->
