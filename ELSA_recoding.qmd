@@ -511,7 +511,7 @@ Life expectancy expectation | EXLO80|`{r}  attr(elsaw$exlo80, "label")` |`{r} pr
 Life expectancy expectation (85+) | EXLO90|`{r}  attr(elsaw$exlo90, "label")` |`{r} prettyNum(as.numeric(table((elsaw$exlo90<0)))[1],big.mark = ",")` 
 Ethnicity | ETHNIC|`{r} attr(elsaw$ethnic, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$ethnic.fr)))[1],big.mark = ",")` 
 Financial future | EXRSLF|`{r}  attr(elsaw$exrslf, "label")` |`{r} prettyNum(as.numeric(table((elsaw$exrslf<0)))[1],big.mark = ",")` 
-General Health| HEHELF|`{r} attr(elsaw$hehelf, "label")` |`{r} prettyNum(as.numeric(table((elsaw$hehelf.fr)))[1],big.mark = ",")` 
+General Health| HEHELF|`{r} attr(elsaw$hehelf, "label")` |`{r} prettyNum(as.numeric(table((elsaw$hehelf<0)))[1],big.mark = ",")` 
 Household type| HHDTYPB|`{r} attr(elsaw$hhdtypb, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$hhdtypb.fr)))[1],big.mark = ",")` 
 Capacity everyday activities|HEADLBA|`{r}  attr(elsaw$headlba, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$headlba.fr)))[1],big.mark = ",")` 
 Internet use | HOBB|`{r}  attr(elsaw$hobb, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$hobb.fr)))[1],big.mark = ",")` 
@@ -665,8 +665,9 @@ cat('\n')
 cat('### ', labs[["psagf"]], '\n')
 cat('\n')
  
-summary(elsaw$psagf) 
+kable(summarytools::descr(elsaw$psagf, stats = c("common", "n")))
 cat('\n')
+
 
 summary(elsaw$psagf[elsaw$psagf>0])  
 cat('\n')
