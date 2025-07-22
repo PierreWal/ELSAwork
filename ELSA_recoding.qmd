@@ -1,6 +1,6 @@
 ---
 title: "ELSA voting patterns study"
-subtitle: Exploratory analysis  - draft version 6
+subtitle: Exploratory analysis  - draft version pre 7
 author: "Pierre Walthéry"
 date: today
 date-format: DD MMMM YYYY
@@ -21,7 +21,12 @@ execute:
   cache: false
 
 ---
-### *Changes from version 5*
+### *Changes from version 6*
+
+1. Improved univariates for continuous variables (30)
+<!-- 2. Meeting (60) -->
+
+#### *Changes from version 5*
 
 1. Added  digran,erlvolba,erlvolpe,exlo80,exlo90,psagf,sclfcoa,scorgch 
 2. Added a section for descriptives of continuous variables
@@ -665,19 +670,42 @@ cat('\n')
 cat('### ', labs[["psagf"]], '\n')
 cat('\n')
  
-kable(summarytools::descr(elsaw$psagf, stats = c("common", "n")))
+ cat('\n')
+cat('**Unweighted results**') 
+cat("\n")
+
+psagf<-ifelse(elsaw$psagf>=0,elsaw$psagf,NA)
+kable(round(
+  summarytools::descr(
+    psagf, 
+    stats = c("common", "n"), 
+    transpose=T),1
+)
+  )
+
 cat('\n')
+cat('**Weighted results**') 
+cat("\n")
+
+w10xwgt<-ifelse(elsaw$psagf>=0,elsaw$w10xwgt,0)
+kable(round(
+        summarytools::descr(psagf, 
+                          stats = c("common", "n"), 
+                          transpose=T,
+                          weights = w10xwgt
+                          ),1
+        )
+)
 
 
-summary(elsaw$psagf[elsaw$psagf>0])  
-cat('\n')
+par(mfrow = c(1, 2))
 
-hist(elsaw$psagf[elsaw$psagf>=0],
+hist(elsaw$psagf,
      main=labs[["psagf"]],xlab="Age")
 cat('\n')
 
-wtd.hist(elsaw$psagf[elsaw$psagf>=0 ],
-         weight=elsaw$w10xwgt[elsaw$psagf>=0],
+wtd.hist(psagf,
+         weight=w10xwgt,
          main=paste0(labs[["psagf"]], " (weighted)"),xlab="Age")
 cat('\n')
 
@@ -686,20 +714,44 @@ cat('\n')
 cat('### ', labs[["exlo80"]], '\n')
 cat('\n')
 
-summary(elsaw$exlo80) 
-cat('\n')
+ cat('\n')
+cat('**Unweighted results**') 
+cat("\n")
 
-summary(elsaw$exlo80[elsaw$exlo80>0])  
-cat('\n')
+exlo80<-ifelse(elsaw$exlo80>=0,elsaw$exlo80,NA)
+kable(round(
+  summarytools::descr(
+    exlo80, 
+    stats = c("common", "n"), 
+    transpose=T),1
+)
+  )
 
-hist(elsaw$exlo80[elsaw$exlo80>=0 ],          
-     main=(labs[["exlo80"]]),xlab="Age"
+cat('\n')
+cat('**Weighted results**') 
+cat("\n")
+
+w10xwgt<-ifelse(elsaw$exlo80>=0,elsaw$w10xwgt,0)
+kable(round(
+        summarytools::descr(exlo80, 
+                          stats = c("common", "n"), 
+                          transpose=T,
+                          weights = w10xwgt
+                          ),1
+        )
+)
+
+
+par(mfrow = c(1, 2))
+
+hist(elsaw$exlo80,          
+     main="Exp (%) that will live to [age]",xlab="Expected Age"
      )
 cat('\n')
 
-wtd.hist(elsaw$exlo80[elsaw$exlo80>=0 ],
-         weight=elsaw$w10xwgt[elsaw$exlo80>=0],
-        main=paste0(labs[["exlo80"]], " (weighted)"),xlab="Age")
+wtd.hist(exlo80,
+         weight=w10xwgt,
+        main="Idem  (recoded & weighted)",xlab="Expected Age")
 cat('\n')
 
 cat('\n')
@@ -707,19 +759,49 @@ cat('\n')
 cat('### ', labs[["exlo90"]], '\n')
  cat('\n')
 
-summary(elsaw$exlo90) 
+ cat('\n')
+cat('**Unweighted results**') 
+cat("\n")
+
+exlo90<-ifelse(elsaw$exlo90>=0,elsaw$exlo90,NA)
+
+kable(round(
+  summarytools::descr(
+    exlo90, 
+    stats = c("common", "n"), 
+    transpose=T),1
+)
+  )
+
+
+cat('\n')
+cat('**Weighted results**') 
+cat("\n")
+
+w10xwgt<-ifelse(elsaw$exlo90>=0,elsaw$w10xwgt,0)
+
+kable(round(
+        summarytools::descr(exlo90, 
+                          stats = c("common", "n"), 
+                          transpose=T,
+                          weights = w10xwgt
+                          ),1
+        )
+)
+
+
+
 cat('\n')
 
-summary(elsaw$exlo90[elsaw$exlo90>0])  
+par(mfrow = c(1, 2))
+
+hist(elsaw$exlo90,
+         main="Exp. prob. of living beyond 85",xlab="Probability")
 cat('\n')
 
-hist(elsaw$exlo90[elsaw$exlo90>=0 ],
-         main=labs[["exlo90"]],xlab="Age")
-cat('\n')
-
-wtd.hist(elsaw$exlo90[elsaw$exlo90>=0 ],
-         weight=elsaw$w10xwgt[elsaw$exlo90>=0],
-         main=paste0(labs[["exlo90"]], " (weighted)"),xlab="Age")
+wtd.hist(exlo90,
+         weight=w10xwgt,
+         main="Idem  (recoded & weighted)",xlab="Probability")
 cat('\n')
 
 cat('\n:::')
