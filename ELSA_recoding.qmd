@@ -1,6 +1,6 @@
 ---
 title: "ELSA voting patterns study"
-subtitle: Exploratory analysis  - draft version 7
+subtitle: Exploratory analysis  - draft version 8
 author: "Pierre Walthéry"
 date: today
 date-format: DD MMMM YYYY
@@ -21,7 +21,11 @@ execute:
   cache: false
 
 ---
-### *Changes from version 6*
+### *Changes from version 7*
+
+1. Added 4 series of models without past voting behaviour as covariate.
+
+#### *Changes from version 6*
 
 1. Improved univariates for continuous variables (30)
 2. Added age 2 and 3 categories to tables in Section 4.1 & 4.2; 2019 GE turnout to tables in Section 4.2 & 4.3. 
