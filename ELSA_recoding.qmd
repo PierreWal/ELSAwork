@@ -1892,11 +1892,6 @@ tmp19 |>plot()
 #| output: asis
 
 
- elsaw$dimarr.fr<-relevel(elsaw$dimarr.fr,ref=2)
- elsaw$tenureb.fr<-relevel(elsaw$tenureb.fr,ref=2)
- elsaw$edqual.fr<-relevel(elsaw$edqual.fr,ref=4)
- elsaw$wpdes.fr<-relevel(elsaw$wpdes.fr,ref=4)
- elsaw$AgeCat3.fr<-relevel(elsaw$AgeCat3.fr,ref=1)
 
 
 elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(dimarr.fr) &
