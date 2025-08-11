@@ -105,7 +105,7 @@ regvars8<-c(sdvars2,ivars)
 datadir<-"~/Data/elsa/UKDA-5050-stata/stata/stata13_se/"
 
 ### Data preparation - needs running only once 
-# source("data_preparation.R")
+# source("syntax/data_preparation.R")
 
 elsaw<-read_dta("/home/mscsepw2/Dropbox/work/ELSAwork/data/elsaw.dta")
 elsal<-read_dta("/home/mscsepw2/Dropbox/work/ELSAwork/data/elsal.dta")
@@ -117,14 +117,14 @@ voted <- readRDS("/home/mscsepw2/Dropbox/work/ELSAwork/data/voted.rds")
 
 
 ```{r functions,tidy=T}
-source("functions.R")
+source("syntax/functions.R")
 ```
 
 
 
 ```{r recode}
 
-source("recoding.R")
+source("syntax/recoding.R")
 
 ``` 
 
@@ -283,7 +283,7 @@ Please note that in the case of newly derived variable 1. and 2. will be identic
 #| echo: false
 
 
-source("univariates.R")
+source("syntax/univariates.R")
 
 ```
 
