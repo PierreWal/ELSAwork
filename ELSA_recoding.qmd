@@ -1,6 +1,6 @@
 ---
 title: "ELSA voting patterns study"
-subtitle: Exploratory analysis  - draft version 8
+subtitle: Exploratory analysis  - draft version 9
 author: "Pierre Walthéry"
 date: today
 date-format: DD MMMM YYYY
@@ -21,52 +21,8 @@ execute:
   cache: false
 
 ---
-### *Changes from version 7*
 
-1. Added 4 series of models without past voting behaviour as covariate.
 
-#### *Changes from version 6*
-
-1. Improved univariates for continuous variables (30)
-2. Added age 2 and 3 categories to tables in Section 4.1 & 4.2; 2019 GE turnout to tables in Section 4.2 & 4.3. 
-3. Added a new recoded version of SR mental health, abilities and general health
-4. Renamed Tertiary ed as Further/Degree level.
-5. Fixed display of unrecoded univariate frequencies
-6. Amended multivariate analysis:
-
-   - Removed household types
-   - Removed age*sex interaction
-   - Replaced past GE turnout with dichotomic version
-   - New sets of stepwise tables including the new list of independent variables
-  
-#### Notes
-
-DIGRAN (presence of granchildren) was not added to the regression models due to the small number of observations.
-  
-<!-- 2. Meeting (60) -->
-
-#### *Changes from version 5*
-
-1. Added  digran,erlvolba,erlvolpe,exlo80,exlo90,psagf,sclfcoa,scorgch 
-2. Added a section for descriptives of continuous variables
-3. Consolidated variables list  in Section 1
-
-#### *Changes from version 4*
-1. Recoded general and mental health as: Excellent/Very Good; Good/Fair; Poor. *Warning:  given the small number of obs for 'poor', this is likely to generate unreliable estimates * 
-
-2. Added four way tables of whether voted by age, sex, by all other variables.
-
-3. Revise model reference categories (see attached) *Note: No list was attached, let me know if this needs rearranging, this is a very quick amendment to make*
-
-4. In model tables listed previous vote at bottom of table; re order log likelihood and GoF stats.
-
-5. Checked and corrected  2005 GE turnout table
-
-6. Reorganised regressions tables so that all series of models include interaction of age by sex as the last model.  
-
-#### *To do*:
-
-1. Add continuous IVs to the 4way tables in Section 5.1
 
 ## Introduction
 This document presents preliminary descriptive,  uni-, bi-   and multivariate analysis   of voting at the 2019 General Elections  among the 50+, using  data from the English Longitudinal Study of Ageing - ELSA at Wave 10.
@@ -103,17 +59,25 @@ ovars<-c("erfvol", "ethnic", "headlba",  "headlbe","hobb", "iafind", "indsex","p
 
 wvars<-c("erfvol", "ethnic", "headlba","headlbe", "hobb", "iafind","indsex", "pscedd", "pscede", "scorgpo","scorgrl", "spcar",  "VotGE01","VotGE05","VotGE15","VotGE17","VotGE19")    
 
-exvars<-c("cfmap2","cfmap3", "cfmetm2", "cfmetm3", "dimarr", "edqual", "exrela", "hehelf2", "hehelf3", "hhdtypb","iafcon","sptraa", "tenureb","w10nssec5","wpdes") 
+exvars<-c("AgeGap31","AgeGap32", "cfmap2","cfmap3", "cfmetm2", "cfmetm3", "dimarr", "edqual", "exlo90d", "exrela", "hehelf2", "hehelf3", "hhdtypb","iafcon","sptraa", "tenureb","w10nssec5","wpdes") 
 
 dvars<-c("AgeCat2.fr", "AgeCat3.fr","VotRec2.fr","VotRec0.fr","VotRec01.fr")
 
 uvars<-paste0(c(ovars,exvars),".f")
 rvars<-paste0(c(ovars,exvars),".fr")
 
-bivars19<-c("AgeCat2","AgeCat3", "cfmap2", "cfmap3", "cfmetm2", "cfmetm3","digran", "dimarr", "edqual", "erfvol", "erlvolba","erlvolpe","ethnic", "exrela", "headlba","headlbe","hehelf2","hehelf3", "hhdtypb","hobb","iafcon", "iafind","indsex", "pscedd", "pscede", "sclfcoa",  "scorgch","scorgpo","scorgrl","spcar",  "sptraa", "tenureb","VotGE01","VotGE05","VotGE15","VotGE17","VotRec2","VotRec0","VotRec01","w10nssec5","wpdes")     
+bivars19<-c("AgeCat2","AgeCat3", "AgeGap31", "AgeGap32", "cfmap2", "cfmap3", "cfmetm2", "cfmetm3","digran", "dimarr", "edqual", "erfvol", "erlvolba","erlvolpe","ethnic", "exlo90d", "exrela", "headlba","headlbe","hehelf2","hehelf3", "hhdtypb","hobb","iafcon", "iafind","indsex", "pscedd", "pscede", "sclfcoa",  "scorgch","scorgpo","scorgrl","spcar",  "sptraa", "tenureb","VotGE01","VotGE05","VotGE15","VotGE17","VotRec2","VotRec0","VotRec01","w10nssec5","wpdes")     
+
+reglab1<-list(AgeCat3.fr="Age",
+                              indsex.fr="Sex", 
+                              dimarr.fr="Marital/relationship status", 
+                              edqual.fr="Highest qualification",
+                              wpdes.fr="Economic activity", 
+                              tenureb.fr="Housing tenure",
+                              VotRec2.fr="Past GE turnout")
 
       
-reglab<-list(hobb.fr="Internet connection?",
+reglab2<-list(hobb.fr="Internet connection?",
                               pscede.fr="Felt lonely", 
                               hehelf3.fr="Self-rated general health", 
                               iafcon.fr="How getting along financially",
@@ -121,8 +85,26 @@ reglab<-list(hobb.fr="Internet connection?",
                               pscedd.fr="Happy last week?",
                               sclfcoa.fr="Give back to community?", 
                               erlvolpe.fr= "Unpaid carer",
-                              AgeGap.r="Perceived/actual age gap",
+                              AgeGap.r="Perceived/actual age gap (cont)",
+                              AgeGap31.fr="Perceived/actual age gap (exact)",
+                              AgeGap32.fr="Perceived/actual age gap (+-3 years)",
                               VotRec2.fr="Past GE turnout")
+
+sdvars1<-c("AgeCat3.fr","indsex.fr","dimarr.fr","edqual.fr","wpdes.fr")
+sdvars2<-c("AgeCat3.fr","indsex.fr","dimarr.fr","edqual.fr","wpdes.fr","tenureb.fr")
+ivars<-c("hobb.fr","pscede.fr","hehelf3.fr","iafcon.fr","cfmetm3.fr","pscedd.fr","sclfcoa.fr","erlvolpe.fr","AgeGap32.fr")
+
+# ivars<-c("hobb.fr","pscede.fr","hehelf3.fr","iafcon.fr","cfmetm3.fr","pscedd.fr","sclfcoa.fr","erlvolpe.fr","AgeGap32.fr")
+
+regvars1<-c("VotRec2.fr",sdvars1)
+regvars2<-c("VotRec2.fr",sdvars2)
+regvars3<-c("VotRec2.fr",sdvars1,ivars)
+regvars4<-c("VotRec2.fr",sdvars2,ivars)
+
+regvars5<-c(sdvars1)
+regvars6<-c(sdvars2)
+regvars7<-c(sdvars1,ivars)
+regvars8<-c(sdvars2,ivars)
 
 datadir<-"~/Data/elsa/UKDA-5050-stata/stata/stata13_se/"
 
@@ -231,7 +213,9 @@ source("functions.R")
 
 
 labs<-list(
-AgeGap.r="Gap: actual and perceived age",
+AgeGap.r="Gap: actual and perceived age (cont.)",
+AgeGap31.f="Gap: actual and perceived age (exact)",
+AgeGap32.f="Gap: actual and perceived age (3 years)",
 cfmap.f="Self-rated mental abilities V1",
 cfmap2.f="Self-rated mental abilities V2",
 cfmap3.f="Self-rated mental abilities V3",
@@ -248,6 +232,7 @@ ethnic.f="White vs Non-white",
 exrela.f="Too little money to spend on their needs?",
 exlo80="Expectation (%) that will live to [age]",
 exlo90="Expectation (%) that will live to be 85 years old or more",
+exlo90d.f="Whether reckon that  will live to be 85 yo or more (dichotomic)",
 headlba.f="Difficulty bathing or showering",
 headlbe.f="Difficulty getting in and out of bed",
 hehelf.f="Self-reported general health V1",
@@ -288,19 +273,6 @@ VotRec01.fr="Past voting record, v2"
 ## Recode
 
 elsaw<-elsaw|>mutate(
-  # AgeCat85.fr=as.factor(case_when(
-  #   indager>=50 & indager<65 ~ "50-64",
-  #   indager>=65 & indager<75 ~ "65-74",
-  #   indager>=75 & indager<85 ~ "75-84",
-  #   indager>=85  ~ "85+"
-  # )),
-  # AgeCat80.fr=as.factor(case_when(
-  #   indager>=50 & indager<65 ~ "50-64",
-  #   indager>=65 & indager<70 ~ "65-69",
-  #   indager>=70 & indager<75 ~ "70-74",
-  #   indager>=75 & indager<80 ~ "75-79",
-  #   indager>=80  ~ "80+"
-  # )),
   AgeCat2.fr=as.factor(case_when(
     indager>=50 & indager<70 ~ "50-69",
     indager>=70 ~ "70+"
@@ -383,6 +355,10 @@ erlvolba.fr=as.factor(case_when(
     erlvolba==0  ~ "No childcare",
     erlvolba==1 ~ "Did childcare"
   )),
+exlo90d.f=as.factor(
+  ifelse(exlo90>50,"Yes","No")
+),
+exlo90d.fr=exlo90d.f,
  exrela.f=as_factor( exrela,"both"),            
   exrela.fr=as.factor(case_when(
     exrela==1 |     exrela==2  ~ "Never/rarely",
@@ -426,6 +402,18 @@ erlvolba.fr=as.factor(case_when(
   psagf.r=ifelse(psagf<0,NA,psagf),
   indager.r=ifelse(indager<0,NA,indager),
   AgeGap.r=indager.r-psagf.r,
+  AgeGap31.f=as.factor(case_when(
+    indager.r<psagf.r ~ "Feels older than age",
+    indager.r==psagf.r ~ "Feels their age",
+    indager.r>psagf.r ~ "Feels younger than age",
+)),
+  AgeGap31.fr=AgeGap31.f,
+  AgeGap32.f=as.factor(case_when(
+    abs(AgeGap.r)<=3 ~ "Feels within 3 years of actual age",
+    indager.r<(psagf.r+3) ~ "Feels > 3 years older",
+    indager.r>(psagf.r+3) ~ "Feels > 3 years younger",
+)),
+  AgeGap32.fr=AgeGap32.f,
    sclfcoa.f=as_factor( sclfcoa,"both"),            
     sclfcoa.fr=as.factor(case_when(
     sclfcoa==4 | sclfcoa==5 | sclfcoa==6  ~ "Give back to community",
@@ -477,7 +465,9 @@ for(l in c("VotGE01","VotGE05","VotGE15","VotGE17")){
          )
        )
 
-    elsaw[paste0(l,".n")]<-ifelse(tmp<0 | is.na(tmp),0,tmp)  
+#    elsaw[paste0(l,".n")]<-ifelse(tmp<0 | is.na(tmp),0,tmp)  
+elsaw[paste0(l,".n")]<-ifelse(tmp<0,0,tmp)  
+  
 }
 
 ### Raw GE voting number
@@ -554,10 +544,6 @@ levels(elsaw$VotGE01.fr)<-c("Didn't vote","Voted")
 
 for(vr in names(labs[-19])){                        ### Leaving AgeCaat out
   attr(elsaw[vr],"label")<-labs[[vr]]
-  
-  # if(vr!="VotRec0.fr" & vr!="VotRec01.fr"){
-  # attr(elsaw[paste0(vr,"r")],"label")<-labs[[vr]]
-  # }
 }
 
 
@@ -584,10 +570,13 @@ levels(elsaw$spcar.fr)<-names(attr(elsaw$spcar, "labels")[4:5])
 
 ## 1. Variables included
 
-|Name|Description|Variable label|Valid responses|
+|Description|Name|Variable label|Valid responses|
 |----|-----------|------------------------------------|-----------:
-Age  2 categories  | AgeCat2    | `{r} attr(elsaw$AgeCat2, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$AgeCat2)))[1],big.mark = ",")` 
-Age 3 categories  | AgeCat3    | `{r} attr(elsaw$AgeCat3, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$AgeCat3)))[1],big.mark = ",")` 
+Age  2 categories  | AgeCat2    | `{r} labs[["AgeCat2.fr"]]` |`{r} prettyNum(as.numeric(table(is.na(elsaw$AgeCat2.fr)))[1],big.mark = ",")` 
+Age 3 categories  | AgeCat3    | `{r} labs[["AgeCat3.fr"]]` |`{r} prettyNum(as.numeric(table(is.na(elsaw$AgeCat3.fr)))[1],big.mark = ",")` 
+Age Gap continuous | AgeGap    | `{r} labs[["AgeGap.r"]]` |`{r} prettyNum(as.numeric(table(is.na(elsaw$AgeGap.r)))[1],big.mark = ",")` 
+Age  Gap 3 categories (exact) | AgeCat31    | `{r} labs[["AgeGap31.f"]]` |`{r} prettyNum(as.numeric(table(is.na(elsaw$AgeGap31.fr)))[1],big.mark = ",")` 
+Age  Gap 3 categories (within 3 years) | AgeCat32    | `{r} labs[["AgeGap32.f"]]` |`{r} prettyNum(as.numeric(table(is.na(elsaw$AgeGap32.fr)))[1],big.mark = ",")` 
 Mental Health| CFMAP |`{r} attr(elsaw$cfmap, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$cfmap.fr)))[1],big.mark = ",")` 
 Memory issues| CFMETM|`{r}  attr(elsaw$cfmetm, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$cfmetm.fr)))[1],big.mark = ",")` 
 Grandchildren|DIGRAN |`{r}  attr(elsaw$digran, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$digran.fr)))[1],big.mark = ",")` 
@@ -619,8 +608,8 @@ Sense of community | SCLFCOA|`{r} attr(elsaw$sclfcoa, "label")` |`{r} prettyNum(
 Use of car | SPCAR|`{r}  attr(elsaw$spcar, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$spcar.fr)))[1],big.mark = ",")` 
 Use of public transport | SPTRAA|`{r}  attr(elsaw$sptraa, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$sptraa.fr)))[1],big.mark = ",")` 
 Housing tenure|TENUREB|`{r}  attr(elsaw$tenureb, "label")`|`{r} prettyNum(as.numeric(table(is.na(elsaw$tenureb.fr)))[1],big.mark = ",")` 
-
-Past voting behaviour|VotGE1,VotGE3,VotGE8,VotGE9|Voted in  past GE  (from previous waves 1, 3, 8, 9, 10)` 
+Past voting behaviour, V1|`{r}  labs[["VotRec0.fr"]]`|Voted in  past GE  (from previous waves 1, 3, 8, 9, 10)|`{r} prettyNum(as.numeric(table(is.na(elsaw$VotRec0.fr)))[1],big.mark = ",")` 
+Past voting behaviour, V2|`{r}  labs[["VotRec01.fr"]]`|Voted in  past GE  (from previous waves 1, 3, 8, 9, 10)|`{r} prettyNum(as.numeric(table(is.na(elsaw$VotRec01.fr)))[1],big.mark = ",")` 
 Social class – NS-SEC | W10NSSEC5|`{r} attr(elsaw$w10nssec5, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$w10nssec5.fr)))[1],big.mark = ",")` 
 Main economic activity| WPDES|`{r} attr(elsaw$wpdes, "label")` |`{r} prettyNum(as.numeric(table(is.na(elsaw$wpdes.fr)))[1],big.mark = ",")` 
 Weights |w10xwgt | `{r} attr(elsaw$w10xwgt, "label")`      |-
@@ -705,6 +694,11 @@ Wave 10|2021-23|-|-|Yes|Dec. 2019
 
 - DIGRAN: the number of grandchildren was asked at  Wave 4 then pushed forward (ELSA User Guide Wave 5 p14). As a result, there is large number of missing values at Wave 10.
 
+- Age gaps continuous was coded as biological age - self perceived age
+
+- Expectation to live to 85 and beyond: the original variable is recorded as subjective probability expressed as percentage (1-100%). The recoded variable was constructed as whether this probability is greater than 50%.  
+
+
 ## 3. Univariates results
 
 Results are presented as follows, under each tab below:
@@ -725,6 +719,8 @@ Please note that in the case of newly derived variable 1. and 2. will be identic
 
 
 
+elsaw$AgeGap31.fr<-elsaw$AgeGap31.f
+elsaw$AgeGap32.fr<-elsaw$AgeGap32.f
 
 elsaw.s<-svydesign(~1,weights=~w10xwgt,data=elsaw)
 
@@ -1132,55 +1128,6 @@ This section presents:
 
 
 
-<!-- ###  5.1 Whether voted at  the 2019 GE by sex and age bands -->
-
-<!-- #### Sample description -->
-
-<!-- ```{r desc} -->
-<!-- #| output: asis -->
-
-<!-- print(kable( -->
-<!-- round((table(Age=elsaw$AgeCat2.fr,Sex=elsaw$indsex.fr, "Voted"=elsaw$VotGE19.fr)))  -->
-<!-- ),'html') -->
-<!-- ``` -->
-
-<!-- ####  Weighted estimates: -->
-
-<!-- - Women: -->
-<!-- ```{r descw} -->
-<!-- #| output: asis -->
-
-<!-- print(kable( -->
-<!-- rbind( -->
-<!--     rowPct(svytable(~VotGE19.fr+AgeCat2.fr+indsex.fr,design = elsaw.s)[,,2]), -->
-<!--     c(100,100) -->
-<!--     ) -->
-<!-- ) -->
-<!-- ) -->
-<!-- ``` -->
-
-<!-- - Men: -->
-
-<!-- ```{r descm} -->
-<!-- #| output: asis -->
-
-<!-- print(kable( -->
-<!-- rbind( -->
-<!-- rowPct(svytable(~VotGE19.fr+AgeCat2.fr+indsex.fr,design = elsaw.s)[,,1]), -->
-<!--     c(100,100) -->
-<!--     ) -->
-<!-- ) -->
-<!-- ) -->
-
-<!-- print(kable( -->
-<!-- ftable(pscedd.fr~VotGE19.fr+AgeCat2.fr+indsex.fr,data=elsaw) -->
-<!-- #table(elsaw$pscedd.fr,elsaw$VotGE19.fr,elsaw$AgeCat2.fr,elsaw$indsex.fr) -->
-<!-- ) -->
-<!-- ) -->
-
-
-<!-- ``` -->
-
 
 ### 5.1 IVs by age, sex and whether voted at the 2019 GE
 
@@ -1336,7 +1283,7 @@ All models were fitted using weights.
 
 #### Stepwise models
 
-```{r multiv_w}
+```{r 6.1}
 #| output: asis
 
 
@@ -1345,75 +1292,39 @@ All models were fitted using weights.
  elsaw$edqual.fr<-relevel(elsaw$edqual.fr,ref=4)
  elsaw$wpdes.fr<-relevel(elsaw$wpdes.fr,ref=4)
  elsaw$AgeCat3.fr<-relevel(elsaw$AgeCat3.fr,ref=1)
+ elsaw$AgeGap31.fr<-relevel(elsaw$AgeGap31.fr,ref=3)
+ elsaw$AgeCap32.fr<-relevel(elsaw$AgeGap32.fr,ref=2)
 
 
-elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(dimarr.fr) &
-                          !is.na(edqual.fr)& !is.na(wpdes.fr) & !is.na(VotRec2.fr) & !is.na(w10xwgt) & !is.na(VotGE19.fr )) 
+elsaw.r<-elsaw |> 
+  select(VotGE19.fr,w10xwgt,all_of(regvars1))|> 
+  na.exclude()
+
 
 regs1<-list()
+tmpR<-list()
 
-regs1[["a11"]]<-glm(VotGE19.fr ~ VotRec2.fr,
+for(mod in 1:(length(regvars1))){
+
+frm<-as.formula(paste0("VotGE19.fr ~ ",paste0(regvars1[c(1:(mod))],collapse="+")))
+
+tmpR[[paste0("a1",mod)]]<-glm(
+                  formula=frm,
                    weights=w10xwgt,
-                   elsaw.r,family=binomial())|> 
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
+                   data=elsaw.r,
+                   family=binomial()) |>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab1,
+                 tidy_fun = broom.helpers::tidy_parameters,
+                 exponentiate = TRUE, 
+                 digits=1,
+                 include = regvars1[1:(mod)]) 
+
+  regs1[[paste0("a1",mod)]] <- tmpR[[paste0("a1",mod)]] |>
   add_glance_table(include=c(AIC,logLik,nobs)) |> 
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs1[["a12"]]<-glm(VotGE19.fr ~ indsex.fr+VotRec2.fr,
-                   weights=w10xwgt,
-                   elsaw.r,family=binomial())|> 
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-regs1[["a13"]]<-glm(VotGE19.fr ~ AgeCat3.fr+indsex.fr+VotRec2.fr,
-                   weights=w10xwgt,
-                   elsaw.r,family=binomial())|>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-# regs1[["a13a"]]<-glm(VotGE19.fr ~ AgeCat3.fr+indsex.fr+VotRec2.fr,
-#                     weights=w10xwgt,
-#                     elsaw.r,family=binomial())|>
-#   tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-#   add_glance_table(include=c(AIC,logLik,nobs)) |> 
-#   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs1[["a14"]]<-glm(VotGE19.fr ~ dimarr.fr +  AgeCat3.fr+indsex.fr+VotRec2.fr,
-                   weights=w10xwgt, 
-                   elsaw.r,family=binomial()) |>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-regs1[["a15"]]<-glm(VotGE19.fr ~ edqual.fr+ dimarr.fr +  AgeCat3.fr+indsex.fr+VotRec2.fr
-                   ,  weights=w10xwgt,
-                   elsaw.r,family=binomial())|>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-tmp16<-glm(VotGE19.fr ~ wpdes.fr + 
-             edqual.fr+ dimarr.fr +  AgeCat3.fr+indsex.fr+VotRec2.fr,
-           weights=w10xwgt, elsaw.r,family=binomial())|> 
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) 
-
-regs1[["a16"]]<- tmp16 |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
- # tmp18<-glm(VotGE19.fr ~ wpdes.fr + 
- #              edqual.fr+ dimarr.fr +  AgeCat3.fr+indsex.fr+VotRec2.fr,
- #            weights=w10xwgt, elsaw.r,family=binomial())|>  
- #   tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) 
- # regs1[["a18"]]<- tmp18 |>
- #   add_glance_table(include=c(AIC,logLik,nobs)) |> 
- #   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+}  
+  
 
 
 MS1<-tbl_merge(tbls=regs1,
@@ -1421,21 +1332,20 @@ MS1<-tbl_merge(tbls=regs1,
                                "**M5**", "**M6**")) |>
     modify_table_body(~.x |>
                           dplyr::arrange(match(var_label,
-                                               c("indsex.fr","AgeCat3.fr", 
-                                                 "dimarr.fr", "edqual.fr","wpdes.fr",
-                                                  "VotRec2.fr","AIC", "logLik", "nobs" ))))
+                                               c(as.character(reglab1),"AIC", "logLik", "nobs" ))))
 
 
 MS1
+
 ```
 
 #### Coefficient plot of Models 6         
 
-```{r plot_w}
+```{r plot_6.1}
 #| fig-width: 12
 #| fig-height: 10
 
-tmp16 |>plot()
+tmpR[["a16"]] |>plot()
 
 ```
 
@@ -1443,249 +1353,106 @@ tmp16 |>plot()
   
 #### Stepwise models
   
-```{r multiv_w.w}
+```{r 6.2}
 #| output: asis
 
-elsaw.r<-elsaw |>filter(!is.na(tenureb.fr) & !is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(dimarr.fr) &
-                          !is.na(edqual.fr)& !is.na(wpdes.fr) & !is.na(VotRec2.fr) & !is.na(w10xwgt) & !is.na(VotGE19.fr )) 
+
+elsaw.r<-elsaw |> 
+  select(VotGE19.fr,w10xwgt,all_of(regvars2))|> 
+  na.exclude()
+
 
 regs2<-list()
+tmpR<-list()
 
-regs2[["a11"]]<-glm(VotGE19.fr ~ VotRec2.fr,
+for(mod in 1:(length(regvars2))){
+
+frm<-as.formula(paste0("VotGE19.fr ~ ",paste0(regvars2[c(1:(mod))],collapse="+")))
+
+tmpR[[paste0("a1",mod)]]<-glm(
+                  formula=frm,
                    weights=w10xwgt,
-                   elsaw.r,family=binomial())|> 
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
+                   data=elsaw.r,
+                   family=binomial()) |>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab1,
+                 tidy_fun = broom.helpers::tidy_parameters,
+                 exponentiate = TRUE, 
+                 digits=1,
+                 include = regvars2[1:(mod)]) 
+
+  regs2[[paste0("a1",mod)]] <- tmpR[[paste0("a1",mod)]]|>
   add_glance_table(include=c(AIC,logLik,nobs)) |> 
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
 
-
-regs2[["a12"]]<-glm(VotGE19.fr ~ indsex.fr+VotRec2.fr,
-                   weights=w10xwgt,
-                   elsaw.r,family=binomial())|> 
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-regs2[["a13"]]<-glm(VotGE19.fr ~ AgeCat3.fr+indsex.fr+VotRec2.fr,
-                   weights=w10xwgt,
-                   elsaw.r,family=binomial())|>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-# regs2[["a13a"]]<-glm(VotGE19.fr ~ AgeCat3.fr+indsex.fr+VotRec2.fr,
-#                     weights=w10xwgt,
-#                     elsaw.r,family=binomial())|>
-#   tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-#   add_glance_table(include=c(AIC,logLik,nobs)) |> 
-#   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs2[["a14"]]<-glm(VotGE19.fr ~ dimarr.fr +  AgeCat3.fr+indsex.fr+VotRec2.fr,
-                   weights=w10xwgt, 
-                   elsaw.r,family=binomial()) |>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-regs2[["a15"]]<-glm(VotGE19.fr ~ edqual.fr+ dimarr.fr +  AgeCat3.fr+indsex.fr+VotRec2.fr
-                   ,  weights=w10xwgt,
-                   elsaw.r,family=binomial())|>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-tmp16<-glm(VotGE19.fr ~ wpdes.fr + 
-             edqual.fr+ dimarr.fr +  AgeCat3.fr+indsex.fr+VotRec2.fr,
-           weights=w10xwgt, elsaw.r,family=binomial())|> 
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) 
-
-
-regs2[["a16"]]<- tmp16 |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
- tmp17<-glm(VotGE19.fr ~ tenureb.fr+wpdes.fr +
-              edqual.fr+ dimarr.fr +  AgeCat3.fr+indsex.fr+VotRec2.fr,
-            weights=w10xwgt, elsaw.r,family=binomial())|>
-   tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1)
- regs2[["a17"]]<- tmp17 |>
-   add_glance_table(include=c(AIC,logLik,nobs)) |>
-   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T)
-
+}  
+  
 
 MS2<-tbl_merge(tbls=regs2,
               tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", 
                                "**M5**", "**M6**", "**M7**")) |>
     modify_table_body(~.x |>
                           dplyr::arrange(match(var_label,
-                                               c("indsex.fr","AgeCat3.fr", 
-                                                 "dimarr.fr", "edqual.fr","wpdes.fr","tenureb.fr",
-                                                  "VotRec2.fr","AIC", "logLik", "nobs" ))))
+                                               c(as.character(reglab1),"AIC", "logLik", "nobs" ))))
 
 
 
 MS2
 
+
+
+
 ```
 
 #### Coefficients plot of Models 7 
 
-```{r plot_w.w}
+```{r plot_6.2}
 #| fig-width: 12
 #| fig-height: 10
 
-tmp17 |>plot()
+tmpR[["a17"]] |>plot()
 
 ```
+
 
 
 ### 6.3 SEV, turnout at previous GE,  independent variables
 
 #### Stepwise models
 
-```{r extrav}
+```{r 6.3}
 #| output: asis
 
-elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr)  & !is.na(dimarr.fr) &
-                          !is.na(edqual.fr)& !is.na(wpdes.fr) & !is.na(hehelf3.fr) &
-                          !is.na(cfmetm.fr)& !is.na(iafcon.fr)& !is.na(pscede.fr) &  !is.na(pscedd.fr) & !is.na(sclfcoa.fr) &
-                          !is.na(hobb.fr) & !is.na(erlvolpe.fr) & !is.na(AgeGap.r) & !is.na(w10xwgt) & !is.na(VotGE19.fr ))  
+
+elsaw.r<-elsaw |> 
+  select(VotGE19.fr,w10xwgt,all_of(regvars3))|> 
+  na.exclude()
 
 
 regs3<-list()
+tmpR<-list()
 
+for(mod in 1:(length(regvars3)-6)){
 
-regs3[["a11"]]<-glm((VotGE19.fr) ~VotRec2.fr+
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                     hobb.fr,
-                   weights=w10xwgt,elsaw.r,family=binomial()) |>  
-  tbl_regression(ci_method="wald",
-                                 label = reglab[c(1,10)],
+frm<-as.formula(paste0("VotGE19.fr ~ ",paste0(regvars3[c(1:(6+mod))],collapse="+")))
+
+tmpR[[paste0("a1",mod)]]<-glm(
+                  formula=frm,
+                   weights=w10xwgt,
+                   data=elsaw.r,
+                   family=binomial()) |>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab2,
                  tidy_fun = broom.helpers::tidy_parameters,
                  exponentiate = TRUE, 
                  digits=1,
-                 include = c("hobb.fr", "VotRec2.fr")) |>
+                 include = regvars3[c(1,7:(6+mod))]) 
+
+regs3[[paste0("a1",mod)]] <-tmpR[[paste0("a1",mod)]]|>
   add_glance_table(include=c(AIC,logLik,nobs)) |> 
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
 
-
-regs3[["a12"]]<-glm(VotGE19.fr ~VotRec2.fr+ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                   hobb.fr+pscede.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:2,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1, 
-                 include = c("hobb.fr","pscede.fr", "VotRec2.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs3[["a13"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:3,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1,                  
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr", "VotRec2.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-regs3[["a14"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-                     indsex.fr+AgeCat3.fr+dimarr.fr+ edqual.fr+wpdes.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr,
-                   weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:4,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "VotRec2.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs3[["a15"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:5,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "VotRec2.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs3[["a16"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr,
-                     weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:6,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "VotRec2.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs3[["a17"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-             indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-             hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:7,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr", "VotRec2.fr")) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-regs3[["a18"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-             indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-             hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr+erlvolpe.fr,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:8,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr", "erlvolpe.fr", "VotRec2.fr")) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-
-tmp19<-glm(VotGE19.fr ~ VotRec2.fr+
-             AgeCat3.fr+indsex.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                          hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr +erlvolpe.fr + AgeGap.r,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald", 
-                 label = reglab,
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr",  "erlvolpe.fr",  "AgeGap.r", "VotRec2.fr")) 
-
-regs3[["a19"]] <- tmp19 |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+}  
 
 
 MS3<-tbl_merge(tbls=regs3,
@@ -1693,10 +1460,11 @@ MS3<-tbl_merge(tbls=regs3,
                                "**M5**", "**M6**", "**M7**", "**M8**", "**M9**"))  |>
      modify_table_body(~.x |>
                       dplyr::arrange(match(var_label,
-                                               c(as.character(reglab),"AIC", "logLik", "nobs" ))))
+                                               c(as.character(reglab2),"AIC", "logLik", "nobs" ))))
 
 
 MS3
+  
 ```
 
 
@@ -1708,7 +1476,7 @@ MS3
 #| fig-width: 12
 #| fig-height: 10
 
-tmp19 |>plot()
+tmpR[["a19"]] |>plot()
 ```
 
 ### 6.4 SEVs and IVs,  turnout at previous GE and tenure
@@ -1718,154 +1486,48 @@ tmp19 |>plot()
 ```{r 6.4 }
 #| output: asis
 
-elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(tenureb.fr) & !is.na(AgeCat3.fr)  & !is.na(dimarr.fr) &
-                          !is.na(edqual.fr)& !is.na(wpdes.fr) & !is.na(hehelf3.fr) &
-                          !is.na(cfmetm.fr)& !is.na(iafcon.fr)& !is.na(pscede.fr) &  !is.na(pscedd.fr) & !is.na(sclfcoa.fr) &
-                          !is.na(hobb.fr) & !is.na(erlvolpe.fr) & !is.na(AgeGap.r) & !is.na(w10xwgt) & !is.na(VotGE19.fr ))  
+elsaw.r<-elsaw |> 
+  select(VotGE19.fr,w10xwgt,all_of(regvars4))|> 
+  na.exclude()
 
 
 regs4<-list()
+tmpR<-list()
+
+for(mod in 1:(length(regvars4)-7)){
+
+frm<-as.formula(paste0("VotGE19.fr ~ ",paste0(regvars4[c(1:(7+mod))],collapse="+")))
 
 
-regs4[["a11"]]<-glm((VotGE19.fr) ~VotRec2.fr+
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-                     hobb.fr,
-                   weights=w10xwgt,elsaw.r,family=binomial()) |>  
-  tbl_regression(ci_method="wald",
-                                 label = reglab[c(1,10)],
+tmpR[[paste0("a1",mod)]]<-glm(
+                  formula=frm,
+                   weights=w10xwgt,
+                   data=elsaw.r,
+                   family=binomial()) |>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab2,
                  tidy_fun = broom.helpers::tidy_parameters,
                  exponentiate = TRUE, 
                  digits=1,
-                 include = c("hobb.fr", "VotRec2.fr")) |>
+                 include = regvars4[c(1,8:(7+mod))]) 
+
+regs4[[paste0("a1",mod)]] <- tmpR[[paste0("a1",mod)]] |>
   add_glance_table(include=c(AIC,logLik,nobs)) |> 
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
 
-
-regs4[["a12"]]<-glm(VotGE19.fr ~VotRec2.fr+ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-                   hobb.fr+pscede.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:2,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1, 
-                 include = c("hobb.fr","pscede.fr", "VotRec2.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs4[["a13"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:3,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1,                  
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr", "VotRec2.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-regs4[["a14"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-                     indsex.fr+AgeCat3.fr+dimarr.fr+ edqual.fr+wpdes.fr+tenureb.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr,
-                   weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:4,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "VotRec2.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs4[["a15"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:5,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "VotRec2.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs4[["a16"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr,
-                     weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:6,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "VotRec2.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs4[["a17"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-             indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-             hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:7,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr", "VotRec2.fr")) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-regs4[["a18"]]<-glm(VotGE19.fr ~ VotRec2.fr+
-             indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-             hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr+erlvolpe.fr,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:8,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr", "erlvolpe.fr", "VotRec2.fr")) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-
-tmp19<-glm(VotGE19.fr ~ VotRec2.fr+
-             AgeCat3.fr+indsex.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr +erlvolpe.fr + AgeGap.r,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald", 
-                 label = reglab,
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr",  "erlvolpe.fr",  "AgeGap.r", "VotRec2.fr")) 
-
-regs4[["a19"]] <- tmp19 |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
+}  
+  
 MS4<-tbl_merge(tbls=regs4,
               tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", 
                                "**M5**", "**M6**", "**M7**", "**M8**", "**M9**"))  |>
      modify_table_body(~.x |>
                       dplyr::arrange(match(var_label,
-                                               c(as.character(reglab),"AIC", "logLik", "nobs" ))))
+                                               c(as.character(reglab2),"AIC", "logLik", "nobs" ))))
 
 
 MS4
+
+
 ```
 
 
@@ -1877,7 +1539,7 @@ MS4
 #| fig-width: 12
 #| fig-height: 10
 
-tmp19 |>plot()
+tmpR[["a19"]] |>plot()
 ```
 
 
@@ -1888,79 +1550,60 @@ tmp19 |>plot()
 
 #### Stepwise models
 
-```{r multiv_w_no}
+```{r 6.5}
 #| output: asis
 
 
+elsaw.r<-elsaw |> 
+  select(VotGE19.fr,w10xwgt,all_of(regvars5))|> 
+  na.exclude()
 
-
-elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(dimarr.fr) &
-                          !is.na(edqual.fr)& !is.na(wpdes.fr) & !is.na(VotRec2.fr) & !is.na(w10xwgt) & !is.na(VotGE19.fr )) 
 
 regs5<-list()
+tmpR<-list()
 
+for(mod in 1:(length(regvars5))){
 
-regs5[["a12"]]<-glm(VotGE19.fr ~ indsex.fr,
+frm<-as.formula(paste0("VotGE19.fr ~ ",paste0(regvars5[c(1:(mod))],collapse="+")))
+
+tmpR[[paste0("a1",mod)]]<-glm(
+                  formula=frm,
                    weights=w10xwgt,
-                   elsaw.r,family=binomial())|> 
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
+                   data=elsaw.r,
+                   family=binomial()) |>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab1[c(1:mod)],
+                 tidy_fun = broom.helpers::tidy_parameters,
+                 exponentiate = TRUE, 
+                 digits=1,
+                 include = regvars5[1:(mod)]) 
+
+regs5[[paste0("a1",mod)]]<-tmpR[[paste0("a1",mod)]]|>
   add_glance_table(include=c(AIC,logLik,nobs)) |> 
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
 
-regs5[["a13"]]<-glm(VotGE19.fr ~ AgeCat3.fr+indsex.fr,
-                   weights=w10xwgt,
-                   elsaw.r,family=binomial())|>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs5[["a14"]]<-glm(VotGE19.fr ~ dimarr.fr +  AgeCat3.fr+indsex.fr,
-                   weights=w10xwgt, 
-                   elsaw.r,family=binomial()) |>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-regs5[["a15"]]<-glm(VotGE19.fr ~ edqual.fr+ dimarr.fr +  AgeCat3.fr+indsex.fr
-                   ,  weights=w10xwgt,
-                   elsaw.r,family=binomial())|>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-tmp16<-glm(VotGE19.fr ~ wpdes.fr + 
-             edqual.fr+ dimarr.fr +  AgeCat3.fr+indsex.fr,
-           weights=w10xwgt, elsaw.r,family=binomial())|> 
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) 
-
-regs5[["a16"]]<- tmp16 |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
+}  
+  
 
 MS5<-tbl_merge(tbls=regs5,
-              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", 
-                               "**M5**")) |>
-    modify_table_body(~.x |>
-                          dplyr::arrange(match(var_label,
-                                               c("indsex.fr","AgeCat3.fr", 
-                                                 "dimarr.fr", "edqual.fr","wpdes.fr",
-                                                  "AIC", "logLik", "nobs" ))))
+              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**","**M5**"))  |>
+               modify_table_body(~.x |>
+                      dplyr::arrange(match(var_label,
+                                               c(as.character(reglab1),"AIC", "logLik", "nobs" ))))
 
 
 MS5
+
+
 ```
 
 #### Coefficient plot of Models 6         
 
-```{r plot_w_no}
+```{r plot_6.5_no}
 #| fig-width: 12
 #| fig-height: 10
 
-tmp16 |>plot()
+tmpR[["a15"]] |>plot()
 
 ```
 
@@ -1968,87 +1611,62 @@ tmp16 |>plot()
   
 #### Stepwise models
   
-```{r multiv_w.w_no}
+```{r 6.6_no}
 #| output: asis
 
-elsaw.r<-elsaw |>filter(!is.na(tenureb.fr) & !is.na(indsex.fr) & !is.na(AgeCat3.fr) & !is.na(dimarr.fr) &
-                          !is.na(edqual.fr)& !is.na(wpdes.fr) & !is.na(VotRec2.fr) & !is.na(w10xwgt) & !is.na(VotGE19.fr )) 
+
+
+elsaw.r<-elsaw |> 
+  select(VotGE19.fr,w10xwgt,all_of(regvars6))|> 
+  na.exclude()
+
 
 regs6<-list()
+tmpR<-list()
 
+for(mod in 1:(length(regvars6))){
 
-regs6[["a12"]]<-glm(VotGE19.fr ~ indsex.fr,
+frm<-as.formula(paste0("VotGE19.fr ~ ",paste0(regvars6[c(1:(mod))],collapse="+")))
+
+tmpR[[paste0("a1",mod)]]<-glm(
+                  formula=frm,
                    weights=w10xwgt,
-                   elsaw.r,family=binomial())|> 
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
+                   data=elsaw.r,
+                   family=binomial()) |>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab1,
+                 tidy_fun = broom.helpers::tidy_parameters,
+                 exponentiate = TRUE, 
+                 digits=1,
+                 include = regvars6[1:mod]) 
+
+regs6[[paste0("a1",mod)]]<-
+  tmpR[[paste0("a1",mod)]] |>
   add_glance_table(include=c(AIC,logLik,nobs)) |> 
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
 
-regs6[["a13"]]<-glm(VotGE19.fr ~ AgeCat3.fr+indsex.fr,
-                   weights=w10xwgt,
-                   elsaw.r,family=binomial())|>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs6[["a14"]]<-glm(VotGE19.fr ~ dimarr.fr +  AgeCat3.fr+indsex.fr,
-                   weights=w10xwgt, 
-                   elsaw.r,family=binomial()) |>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-regs6[["a15"]]<-glm(VotGE19.fr ~ edqual.fr+ dimarr.fr +  AgeCat3.fr+indsex.fr
-                   ,  weights=w10xwgt,
-                   elsaw.r,family=binomial())|>
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-tmp16<-glm(VotGE19.fr ~ wpdes.fr + 
-             edqual.fr+ dimarr.fr +  AgeCat3.fr+indsex.fr,
-           weights=w10xwgt, elsaw.r,family=binomial())|> 
-  tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1) 
-
-
-regs6[["a16"]]<- tmp16 |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
- tmp17<-glm(VotGE19.fr ~ tenureb.fr+wpdes.fr +
-              edqual.fr+ dimarr.fr +  AgeCat3.fr+indsex.fr,
-            weights=w10xwgt, elsaw.r,family=binomial())|>
-   tbl_regression(ci_method="wald", tidy_fun = broom.helpers::tidy_parameters,exponentiate = TRUE, digits=1)
- regs6[["a17"]]<- tmp17 |>
-   add_glance_table(include=c(AIC,logLik,nobs)) |>
-   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T)
-
+}  
+  
 
 MS6<-tbl_merge(tbls=regs6,
-              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", 
-                               "**M5**", "**M6**")) |>
-    modify_table_body(~.x |>
-                          dplyr::arrange(match(var_label,
-                                               c("indsex.fr","AgeCat3.fr", 
-                                                 "dimarr.fr", "edqual.fr","wpdes.fr","tenureb.fr",
-                                                  "AIC", "logLik", "nobs" ))))
-
+              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**","**M5**", "**M6**"))  |>
+               modify_table_body(~.x |>
+                      dplyr::arrange(match(var_label,
+                                               c(as.character(reglab1),"AIC", "logLik", "nobs" ))))
 
 
 MS6
+
 
 ```
 
 #### Coefficients plot of Models 7 
 
-```{r plot_w.w_no}
+```{r plot_6.6_no}
 #| fig-width: 12
 #| fig-height: 10
 
-tmp17 |>plot()
+tmpR[["a16"]] |>plot()
 
 ```
 
@@ -2057,326 +1675,147 @@ tmp17 |>plot()
 
 #### Stepwise models
 
-```{r extrav_no}
+```{r 6.7_no}
 #| output: asis
 
-elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(AgeCat3.fr)  & !is.na(dimarr.fr) &
-                          !is.na(edqual.fr)& !is.na(wpdes.fr) & !is.na(hehelf3.fr) &
-                          !is.na(cfmetm.fr)& !is.na(iafcon.fr)& !is.na(pscede.fr) &  !is.na(pscedd.fr) & !is.na(sclfcoa.fr) &
-                          !is.na(hobb.fr) & !is.na(erlvolpe.fr) & !is.na(AgeGap.r) & !is.na(w10xwgt) & !is.na(VotGE19.fr ))  
+
+elsaw.r<-elsaw |> 
+  select(VotGE19.fr,w10xwgt,all_of(regvars7))|> 
+  na.exclude()
 
 
 regs7<-list()
+tmpG<-list()
+tmpR<-list()
 
+for(mod in 1:(length(regvars7)-5)){
 
-regs7[["a11"]]<-glm((VotGE19.fr) ~
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                     hobb.fr,
-                   weights=w10xwgt,elsaw.r,family=binomial()) |>  
-  tbl_regression(ci_method="wald",
-                                 label = reglab[c(1,10)],
+frm<-as.formula(paste0("VotGE19.fr ~ ",paste0(regvars7[c(1:(5+mod))],collapse="+")))
+
+tmpG[[paste0("a1",mod)]]<-glm(
+                  formula=frm,
+                   weights=w10xwgt,
+                   data=elsaw.r,
+                   family=binomial()) 
+
+tmpR[[paste0("a1",mod)]] <- tmpG[[paste0("a1",mod)]]|>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab2,
                  tidy_fun = broom.helpers::tidy_parameters,
                  exponentiate = TRUE, 
                  digits=1,
-                 include = c("hobb.fr")) |>
+                 include = regvars7[6:(5+mod)]) 
+
+regs7[[paste0("a1",mod)]]<- tmpR[[paste0("a1",mod)]] |>
   add_glance_table(include=c(AIC,logLik,nobs)) |> 
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs7[["a12"]]<-glm(VotGE19.fr ~ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                   hobb.fr+pscede.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:2,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1, 
-                 include = c("hobb.fr","pscede.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs7[["a13"]]<-glm(VotGE19.fr ~ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:3,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1,                  
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-regs7[["a14"]]<-glm(VotGE19.fr ~ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+ edqual.fr+wpdes.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr,
-                   weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:4,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs7[["a15"]]<-glm(VotGE19.fr ~ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:5,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs7[["a16"]]<-glm(VotGE19.fr ~ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr,
-                     weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:6,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs7[["a17"]]<-glm(VotGE19.fr ~ 
-             indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-             hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:7,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr")) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-regs7[["a18"]]<-glm(VotGE19.fr ~ 
-             indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+
-             hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr+erlvolpe.fr,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:8,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr", "erlvolpe.fr")) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-
-tmp19<-glm(VotGE19.fr ~ 
-             AgeCat3.fr+indsex.fr+dimarr.fr+edqual.fr+wpdes.fr+
-                          hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr +erlvolpe.fr + AgeGap.r,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald", 
-                 label = reglab,
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr",  "erlvolpe.fr",  "AgeGap.r")) 
-
-regs7[["a19"]] <- tmp19 |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
+}  
+  
 
 MS7<-tbl_merge(tbls=regs7,
-              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", 
-                               "**M5**", "**M6**", "**M7**", "**M8**", "**M9**"))  |>
-     modify_table_body(~.x |>
+              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**","**M5**", "**M6**", "**M7**", "**M8**","M9"))  |>
+               modify_table_body(~.x |>
                       dplyr::arrange(match(var_label,
-                                               c(as.character(reglab),"AIC", "logLik", "nobs" ))))
+                                               c(as.character(reglab2),"AIC", "logLik", "nobs" ))))
 
 
 MS7
+
+
+
+
 ```
-
-
-
 
 #### Coefficients plot of Models  9
 
-```{r plot_6.3_no}
+```{r plot_6.7_no}
 #| fig-width: 12
 #| fig-height: 10
 
-tmp19 |>plot()
+tmpR[["a19"]] |>plot()
 ```
+
+### 6.7.a *No past turnout*: SEVs, IVs & tenure; full output
+
+```{r 6.7_nof}
+#| output: asis
+
+
+regs7f<-list()
+tmpR<-list()
+
+for(mod in 1:(length(regvars7)-5)){
+
+tmpR[[paste0("a1",mod)]] <- tmpG[[paste0("a1",mod)]]|>  
+                   tbl_regression(ci_method="wald",
+                   label = c(reglab1[-7],reglab2),
+                 tidy_fun = broom.helpers::tidy_parameters,
+                 exponentiate = TRUE, 
+                 digits=1) 
+
+regs7f[[paste0("a1",mod)]]<- tmpR[[paste0("a1",mod)]] |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+}  
+  
+
+MS7f<-tbl_merge(tbls=regs7f,
+              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**","**M5**", "**M6**", "**M7**", "**M8**","M9"))  |>
+               modify_table_body(~.x |>
+                      dplyr::arrange(match(var_label,
+                                               c(as.character(c(reglab1[-7],reglab2)),"AIC", "logLik", "nobs" ))))
+
+
+MS7f
+
+```
+
 
 ### 6.8 *No past turnout*: SEVs, IVs & tenure
 
 #### Stepwise models
 
-```{r 6.4_no }
+```{r 6.8 }
 #| output: asis
 
-elsaw.r<-elsaw |>filter(!is.na(indsex.fr) & !is.na(tenureb.fr) & !is.na(AgeCat3.fr)  & !is.na(dimarr.fr) &
-                          !is.na(edqual.fr)& !is.na(wpdes.fr) & !is.na(hehelf3.fr) &
-                          !is.na(cfmetm.fr)& !is.na(iafcon.fr)& !is.na(pscede.fr) &  !is.na(pscedd.fr) & !is.na(sclfcoa.fr) &
-                          !is.na(hobb.fr) & !is.na(erlvolpe.fr) & !is.na(AgeGap.r) & !is.na(w10xwgt) & !is.na(VotGE19.fr ))  
+elsaw.r<-elsaw |> 
+  select(VotGE19.fr,w10xwgt,all_of(regvars8))|> 
+  na.exclude()
 
 
 regs8<-list()
+tmpR<-list()
+for(mod in 1:(length(regvars8)-6)){
 
+frm<-as.formula(paste0("VotGE19.fr ~ ",paste0(regvars8[c(1:(6+mod))],collapse="+")))
 
-regs8[["a11"]]<-glm((VotGE19.fr) ~
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-                     hobb.fr,
-                   weights=w10xwgt,elsaw.r,family=binomial()) |>  
-  tbl_regression(ci_method="wald",
-                                 label = reglab[c(1,10)],
+tmpR[[paste0("a1",mod)]]<-glm(
+                  formula=frm,
+                   weights=w10xwgt,
+                   data=elsaw.r,
+                   family=binomial()) |>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab2,
                  tidy_fun = broom.helpers::tidy_parameters,
                  exponentiate = TRUE, 
                  digits=1,
-                 include = c("hobb.fr")) |>
+                 include = regvars8[7:(6+mod)]) 
+
+regs8[[paste0("a1",mod)]]<- tmpR[[paste0("a1",mod)]] |>
   add_glance_table(include=c(AIC,logLik,nobs)) |> 
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
 
-
-regs8[["a12"]]<-glm(VotGE19.fr ~ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-                   hobb.fr+pscede.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:2,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1, 
-                 include = c("hobb.fr","pscede.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs8[["a13"]]<-glm(VotGE19.fr ~ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:3,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1,                  
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-regs8[["a14"]]<-glm(VotGE19.fr ~ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+ edqual.fr+wpdes.fr+tenureb.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr,
-                   weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:4,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs8[["a15"]]<-glm(VotGE19.fr ~ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr,
-                   weights=w10xwgt, elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:5,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = TRUE, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs8[["a16"]]<-glm(VotGE19.fr ~ 
-                     indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-                     hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr,
-                     weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:6,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1,
-                 include = c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr")) |>
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-regs8[["a17"]]<-glm(VotGE19.fr ~ 
-             indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-             hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:7,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr")) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-regs8[["a18"]]<-glm(VotGE19.fr ~ 
-             indsex.fr+AgeCat3.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-             hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr+erlvolpe.fr,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald",
-                 label = reglab[c(1:8,10)],
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr", "erlvolpe.fr")) |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
-
-
-
-tmp19<-glm(VotGE19.fr ~ 
-             AgeCat3.fr+indsex.fr+dimarr.fr+edqual.fr+wpdes.fr+tenureb.fr+
-hobb.fr+pscede.fr+hehelf3.fr+iafcon.fr+cfmetm3.fr+pscedd.fr+sclfcoa.fr +erlvolpe.fr + AgeGap.r,
-           weights=w10xwgt,elsaw.r,family=binomial())|>  
-  tbl_regression(ci_method="wald", 
-                 label = reglab,
-                 tidy_fun = broom.helpers::tidy_parameters,
-                 exponentiate = T, 
-                 digits=1, 
-                 include =c("hobb.fr","pscede.fr", "hehelf3.fr","iafcon.fr", "cfmetm3.fr", "pscedd.fr", "sclfcoa.fr",  "erlvolpe.fr",  "AgeGap.r")) 
-
-regs8[["a19"]] <- tmp19 |> 
-  add_glance_table(include=c(AIC,logLik,nobs)) |> 
-  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
-
+}
 
 MS8<-tbl_merge(tbls=regs8,
-              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", 
-                               "**M5**", "**M6**", "**M7**", "**M8**", "**M9**"))  |>
-     modify_table_body(~.x |>
+              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**","**M5**", "**M6**", "**M7**", "**M8**", "**M9**"))  |>
+               modify_table_body(~.x |>
                       dplyr::arrange(match(var_label,
-                                               c(as.character(reglab),"AIC", "logLik", "nobs" ))))
+                                               c(as.character(reglab2),"AIC", "logLik", "nobs" ))))
 
 
 MS8
+
 ```
 
 
@@ -2384,13 +1823,69 @@ MS8
 
 #### Coefficients plot of Models  9
 
-```{r plot_6.4_no}
+```{r plot_6.8}
 #| fig-width: 12
 #| fig-height: 10
 
-tmp19 |>plot()
+tmpR[["a19"]] |>plot()
 ```
 
-
 :::
+
+## Document version history
+
+### *Changes from version 8*
+
+1. Created two versions of the gap between biological and self-perceived age. Added them to descriptive and regression tables.
+2. Created a dichotomic  version of the estimated probability of living to 85 and beyond.
+3. Amended the recording of past voting behaviour with  missing recorded system misssing rather than no turnout.  
+4. Added a full output version of Model 7.
+5. Misc. model optimisations
+
+#### *Changes from version 7*
+
+Added 4 series of models without past voting behaviour as covariate.
+
+#### *Changes from version 6*
+
+1. Improved univariates for continuous variables (30)
+2. Added age 2 and 3 categories to tables in Section 4.1 & 4.2; 2019 GE turnout to tables in Section 4.2 & 4.3. 
+3. Added a new recoded version of SR mental health, abilities and general health
+4. Renamed Tertiary ed as Further/Degree level.
+5. Fixed display of unrecoded univariate frequencies
+6. Amended multivariate analysis:
+
+   - Removed household types
+   - Removed age*sex interaction
+   - Replaced past GE turnout with dichotomic version
+   - New sets of stepwise tables including the new list of independent variables
+  
+#### Notes
+
+DIGRAN (presence of granchildren) was not added to the regression models due to the small number of observations.
+  
+<!-- 2. Meeting (60) -->
+
+#### *Changes from version 5*
+
+1. Added  digran,erlvolba,erlvolpe,exlo80,exlo90,psagf,sclfcoa,scorgch 
+2. Added a section for descriptives of continuous variables
+3. Consolidated variables list  in Section 1
+
+#### *Changes from version 4*
+1. Recoded general and mental health as: Excellent/Very Good; Good/Fair; Poor. *Warning:  given the small number of obs for 'poor', this is likely to generate unreliable estimates * 
+
+2. Added four way tables of whether voted by age, sex, by all other variables.
+
+3. Revise model reference categories (see attached) *Note: No list was attached, let me know if this needs rearranging, this is a very quick amendment to make*
+
+4. In model tables listed previous vote at bottom of table; re order log likelihood and GoF stats.
+
+5. Checked and corrected  2005 GE turnout table
+
+6. Reorganised regressions tables so that all series of models include interaction of age by sex as the last model.  
+
+#### *To do*:
+
+1. Add continuous IVs to the 4 way tables in Section 5.1
   
