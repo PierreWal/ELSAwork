@@ -64,8 +64,8 @@ vfreq <- function(var, dat) {
     ) %>%
     dplyr::mutate(
       Percent = round(Frequency / sum(Frequency, na.rm = TRUE) * 100, 1)
-    ) %>%
-    dplyr::arrange(dplyr::desc(Frequency))
+    ) # %>%
+#    dplyr::arrange(dplyr::desc(Frequency))
         names(freq_table)[1]<-"Category"
         
         freq_table<-rbind(freq_table,
@@ -138,8 +138,8 @@ wfreq2 <- function(var, dat.s) {
   freq_df <- freq_df %>%
     dplyr::mutate(
       Percent = round(100 * Frequency / sum(Frequency), 1)
-    ) %>%
-    dplyr::arrange(dplyr::desc(Frequency))
+    ) # %>%
+ #   dplyr::arrange(dplyr::desc(Frequency))
   
   # Print nicely
 #  knitr::kable(freq_df, align = "lrr", caption = paste("Weighted frequency table for", var))

@@ -1,0 +1,600 @@
+# ESS voting pattern study
+
+
+## Introduction
+This document presents preliminary descriptive and multivariate analysis   of voter turnout at the last national elections among respondents aged  50+ using  data from the European Social Survey - Round 11 (2023-24). [^1] 
+
+[^1]:  Israel, the Russian Federation and Turkey were not included in this analysis. 
+
+- Section 1 presents the variables included in the analysis
+- Section 2 discusses  recoding  related issues
+- Section 3 includes  unweighted and weighted frequency tables of unrecoded, recoded and derived socio-economic (SEV) and independent (IV) variables.
+- Section 4 documents unweighted and weighted 2-way contingency tables of SEVs and IVs  by turnout at the last national elections, as well as  age and sex. 
+- Section 5 presents additional four way tables of voter turnout  by SEVs and IVs broken down by age and sex.  
+- Section 6 presents the results of four series of stepwise logistic regression models of voting at the last national election.
+
+
+```{r data}
+
+rm(list=ls())
+
+library(haven)
+library(survey)
+library(dplyr)
+library(knitr)
+library(gtsummary)
+library(ggplot2)
+library(weights)
+
+source("syntax/functions.R")
+source("syntax/labels_ess.R")
+
+datadir<-"~/Data/ess/ESS11/"
+ess.raw<-read_dta(paste0(datadir,"ESS11.dta")) |> filter(!cntry=="TR" & !cntry=="RU" & !cntry=="IL")
+
+ess<-ess.raw |>filter(!cntry=="TR" & !cntry=="RU" & !cntry=="IL" & agea>50) |>
+               select(all_of(c(ovars,exvars,auxvars,desvars)))
+
+#######################################################################```
+
+
+```{r recode}
+source("syntax/recoding_ess.R")
+``` 
+
+
+
+## 1. Variables included
+
+|Description|Name|Variable label|Valid responses [^2]|
+|----|-----------|------------------------------------|-----------:
+Age  2 categories  | AgeCat2    | `{r} labs[["AgeCat2.fr"]]` |`{r} prettyNum(as.numeric(table(is.na(ess$AgeCat2.fr)))[1],big.mark = ",")` 
+Age 3 categories  | AgeCat3    | `{r} labs[["AgeCat3.f"]]` |`{r} prettyNum(as.numeric(table(is.na(ess$AgeCat3.fr)))[1],big.mark = ",")` 
+`{r} labs[["hincfel.f"]]`  | hincfel    | `{r} attr(ess$hincfel,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hincfel.fr)))[1],big.mark = ",")` 
+`{r} labs[["fltlnl.f"]]`  | fltlnl    | `{r} attr(ess$fltlnl,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$fltlnl.fr)))[1],big.mark = ",")` 
+`{r} labs[["gndr.f"]]`  | gndr    | `{r} attr(ess$fltlnl,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$gndr.fr)))[1],big.mark = ",")` 
+`{r} labs[["happy.f"]]`  | happy    | `{r} attr(ess$happy,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$happy.fr)))[1],big.mark = ",")` 
+`{r} labs[["sclmeet.f"]]`  | sclmeet    | `{r} attr(ess$sclmeet,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$sclmeet.fr)))[1],big.mark = ",")` 
+`{r} labs[["rlgatnd.f"]]`  | rlgatnd    | `{r} attr(ess$rlgatnd,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$rlgatnd.fr)))[1],big.mark = ",")` 
+`{r} labs[["mbtru.f"]]`  | mbtru    | `{r} attr(ess$mbtru,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$mbtru.fr)))[1],big.mark = ",")` 
+`{r} labs[["hswrk.f"]]`  | hswrk    | `{r} attr(ess$hswrk,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hswrk.fr)))[1],big.mark = ",")` 
+`{r} labs[["tporgwk.f"]]`  | tporgwk    | `{r} attr(ess$tporgwk,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$tporgwk.fr)))[1],big.mark = ",")` 
+`{r} labs[["volunfp.f"]]`  | volunfp    | `{r} attr(ess$volunfp,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$volunfp.fr)))[1],big.mark = ",")` 
+`{r} labs[["vote.f"]]`  | vote    | `{r} attr(ess$vote,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$vote.fr)))[1],big.mark = ",")` 
+`{r} labs[["polintr.f"]]`  | polintr    | `{r} attr(ess$polintr,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$polintr.fr)))[1],big.mark = ",")` 
+`{r} labs[["netusoft.f"]]`  | netusoft    | `{r} attr(ess$netusoft,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$netusoft.fr)))[1],big.mark = ",")`
+`{r} labs[["maritalb.f"]]`  | maritalb  | `{r} attr(ess$maritalb,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$maritalb.fr)))[1],big.mark = ",")` 
+`{r} labs[["eisced.f"]]`  | eisced    | `{r} attr(ess$eisced,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$eisced.fr)))[1],big.mark = ",")` 
+`{r} labs[["health.f"]]`  | health    | `{r} attr(ess$health,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$health.fr)))[1],big.mark = ",")`
+`{r} labs[["health2.f"]]`  | health2    | `{r} attr(ess$health2,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$health2.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltprhb.f"]]`  | hltprhb    | `{r} attr(ess$hltprhb,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprhb.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltpral.f"]]`  | hltpral    | `{r} attr(ess$hltpral,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltpral.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltprbn.f"]]`  | hltprbn    | `{r} attr(ess$hltprbn,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprbn.fr)))[1],big.mark = ",")`
+`{r} labs[["hltprpa.f"]]`  | hltprpa    | `{r} attr(ess$hltprpa,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprpa.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltprpf.f"]]`  | hltprpf    | `{r} attr(ess$hltprpf,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprpf.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltprsd.f"]]`  | hltprsd    | `{r} attr(ess$hltprsd,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprsd.fr)))[1],big.mark = ",")`
+`{r} labs[["hltprsc.f"]]`  | hltprsc    | `{r} attr(ess$hltprsc,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprsc.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltprsh.f"]]`  | hltprsh    | `{r} attr(ess$hltprsh,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprsh.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltprdi.f"]]`  | hltprdi    | `{r} attr(ess$hltprdi,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprdi.fr)))[1],big.mark = ",")` 
+`{r} labs[["nrhltpb.f"]]`  | nrhltpb    | `{r} attr(ess$nrhltpb,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$nrhltpb.fr)))[1],big.mark = ",")`
+`{r} labs[["hhdtypb.f"]]`  | hhdtypb    | `{r} attr(ess$hhdtypb,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hhdtypb.fr)))[1],big.mark = ",")` 
+`{r} labs[["isco1.f"]]`  | isco1    | `{r} attr(ess$isco1,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$isco1.fr)))[1],big.mark = ",")` 
+`{r} labs[["mnactic.f"]]`  | mnactic    | `{r} attr(ess$mnactic,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$mnactic.fr)))[1],big.mark = ",")`
+
+:Table 1: Original and derived variables used in the analysis {tbl-colwidths="[25,5,65,5]"}
+
+
+[^2]: Respondents aged 50 and over]
+
+<!-- |Name|Fieldwork|Sample|Of which core|Vote asked|Last GE -->
+<!-- |----|---------|-----------|-------|------|-------: -->
+<!-- Wave 1 | 2002-03 | 12,100|11,391|Yes|June 2001  -->
+<!-- Wave 2 |2004/05 |9,432|8,780|No|June 2001 -->
+<!-- Wave 3 |2006/07 |9,771|8,810|Yes|May 2005 -->
+<!-- Wave 4 |2008/09 |11,050|9,886|No|May 2005 -->
+<!-- Wave 5 |2010/11 | 10,274|9,090|No|May 2010 -->
+<!-- Wave 6 |2012/13 |10,601|9,169|No|May 2010 -->
+<!-- Wave 7 |2014/15 |9,666,|8,249|No|May 2010 -->
+<!-- Wave 8 |2016/17 |8,445| 7,223|Yes|May 2015 -->
+<!-- Wave 9|2018/19 |8,736| 7,289|Yes|June 2017 -->
+<!-- Wave 10|2021-23|-|-|Yes|Dec. 2019 -->
+
+<!-- :Table 2: *ELSA fieldwork dates and election turnout variables* -->
+
+  <!-- Source: ELSA Wave 9 report, Table 1.1; Wikipedia. -->
+
+  
+## 2. Variables recoding and operationalisation notes
+
+The original dataset includes `{r} prettyNum(nrow(ess.raw),big.mark = ",")` observations, of which `{r} prettyNum(nrow(ess),big.mark = ",")` respondents aged 50 and over.
+  
+1. Integrated household composition variable  `hhdtypb`  was constructed using the household grid variables `rshipa*`, and household size information. 
+2. No information was available on the presence of grandchilddren
+3. There is no clear variable recording exclusively caring for dependents: it is either amalgamated with housework (`hwrk`) or with helping others more broadly: `hlpfmly`.
+4. Whether respondents had internet connection was approximated using frequency of internet use.
+5. Marital status was constructed in order to include informal partnership/cohabitation.
+6. There are no variables measuring difficulties/limitations with daily life activities. A variable was constructed recording the number of health conditions instead. 
+
+
+
+
+## 3. Univariates results
+
+Results are presented as follows, under each tab below:
+  
+  1.  Unweighted frequencies and proportions of the original variables, unrecoded
+  2.  Weighted frequencies and proportions of the recoded (ie missing/invalid values removed) variables
+
+In the case of  derived variables created for the purpose of this analysis 1. and 2. are identical. 
+
+
+::: {.panel-tabset}
+
+
+```{r univariates}
+#| results: asis
+#| echo: false
+
+
+ source("syntax/univariates_ess.R")
+
+```
+
+
+
+
+## 4. Bivariates results
+
+This section contains for each variable used in the study, the following contingency tables:
+
+  1. With voter turnout at the last national elections
+  2. With sex
+  3. With age, two and three categories
+
+All contingency tables were computed with weighted data and include  $\chi^2$ test of independence.
+
+
+### **4.1. Voter turnout at the last national elections **
+
+::: {.panel-tabset}
+
+```{r biv}
+#| results: asis
+#| echo: false
+options(survey.lonely.psu="adjust")
+ess.s<-svydesign(~psu,weights=~anweight,strata=~stratum,data=ess,nest=T)
+
+labs[["AgeCat2.f"]]<-"Recoded age, 2 category"
+labs[["AgeCat3.f"]]<-"Recoded age, 3 category"
+
+for (v in c(bivars19,"AgeCat2","AgeCat3")) {
+  
+   cat('#### ', labs[[paste0(v,".f")]], '\n')
+ 
+  
+  cat(paste0("##### *Whether voted at the last NE by ",labs[[paste0(v,".f")]],"(",v, ")*"))
+
+  tmp.t<-svytable(as.formula(paste0("~vote.fr + ", v,".fr")), ess.s)
+  tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
+  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p,colSums(tmp.p))
+  rownames(tmp.p)<-c("",rownames(tmp.t),"Total")
+  names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
+  
+  print(kable(
+    tmp.p
+  ),'html')
+  
+  cat('\n')
+  
+  t<-svychisq(as.formula(paste0("~", v,".fr","+ vote.fr")), ess.s)
+  
+  print(t$method)
+  cat('\n')
+  print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+  cat('\n')
+  
+  ################################################################################################
+  
+}
+
+cat('\n:::')
+
+```
+
+
+### **4.2. Sex **
+
+::: {.panel-tabset}
+
+```{r bisex}
+#| results: asis
+#| echo: false
+
+for (v in c(bivars19,"vote")) {
+  
+  if(v!="gndr"){
+     ttl<-labs[[paste0(v,".f")]]
+
+       if(v=="Agecat2" | v=="Agecat3"){
+     ttl<-labs[[paste0(v,".fr")]]
+       }
+     
+   cat('#### ', labs[[paste0(v,".f")]], '\n')
+ 
+    cat(paste0("##### *Sex by ",labs[[paste0(v,".f")]],"(",v, ")*"))
+
+    
+    tmp.t<-svytable(as.formula(paste0("~gndr.fr + ", v,".fr")), ess.s)
+    tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
+    tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p,colSums(tmp.p))
+  rownames(tmp.p)<-c("",rownames(tmp.t),"Total")
+  names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
+    
+    print(kable(tmp.p))
+    cat('\n')
+    
+    t<-svychisq(as.formula(paste0("~", v,".fr","+ gndr.fr")), ess.s)
+    
+    print(t$method)
+    cat('\n')
+    print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+    
+  cat('\n')
+  
+  ################################################################################################
+  }
+}
+
+cat('\n:::')
+
+```
+
+### **4.3. Age, 2 & 3 categories **
+
+::: {.panel-tabset}
+
+```{r biage}
+#| results: asis
+#| echo: false
+
+for (v in c(bivars19,"vote")) {
+  
+  if(v!="AgeCat2" & v!="AgeCat3"){
+  
+  
+   cat('#### ', labs[[paste0(v,".f")]], '\n')
+ 
+    cat(paste0("##### *Age 2 category by ",labs[[paste0(v,".f")]],"(",v, ")*"))
+  
+  tmp.t<-svytable(as.formula(paste0("~AgeCat2.fr +", v,".fr")), ess.s)
+  tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
+  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p,colSums(tmp.p))
+  rownames(tmp.p)<-c("",rownames(tmp.t),"Total")
+  names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
+  
+  print(kable(tmp.p))
+  cat('\n')
+  
+  
+  t<-svychisq(as.formula(paste0("~", v,".fr","+ AgeCat2.fr")), ess.s)
+  print(t$method)
+  cat('\n')
+  
+  print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+  cat('\n')
+  
+    cat(paste0("##### *Age 3 category by ",labs[[paste0(v,".f")]],"(",v, ")*"))
+  cat('\n')
+  tmp.t<-svytable(as.formula(paste0("~AgeCat3.fr + ", v,".fr")), ess.s)
+  tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(rowPct(tmp.t)))))
+  tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p,colSums(tmp.p))
+  rownames(tmp.p)<-c("",rownames(tmp.t),"Total")
+  names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
+  
+  print(kable(tmp.p))
+  cat('\n')
+  
+  
+  t<-svychisq(as.formula(paste0("~", v,".fr","+ AgeCat3.fr")), ess.s)
+  
+  print(t$method)
+  cat('\n')
+  print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+  
+  cat('\n')
+  }
+}
+cat('\n:::')
+```
+
+
+### **4.4. Country **
+
+::: {.panel-tabset}
+
+```{r bicntry}
+#| results: asis
+#| echo: false
+
+for (v in c(bivars19,"vote")) {
+  
+  if(v!="cntry"){
+     ttl<-labs[[paste0(v,".f")]]
+
+       if(v=="Agecat2" | v=="Agecat3"){
+     ttl<-labs[[paste0(v,".fr")]]
+       }
+     
+   cat('#### ', labs[[paste0(v,".f")]], '\n')
+ 
+    cat(paste0("##### *Sex by ",labs[[paste0(v,".f")]],"(",v, ")*"))
+
+    
+    tmp.t<-svytable(as.formula(paste0("~cntry.fr + ", v,".fr")), ess.s)
+    tmp.p<-data.frame(do.call(cbind, Map(cbind, as.data.frame.matrix(round(tmp.t,1)), as.data.frame.matrix(colPct(tmp.t)))))
+    tmp.p<-rbind(rep(c("Freq","%"),ncol(tmp.p)/2),tmp.p,colSums(tmp.p))
+  rownames(tmp.p)<-c("",rownames(tmp.t),"Total")
+  names(tmp.p)<-c(rbind(colnames(tmp.t)," "))
+    
+    print(kable(tmp.p))
+    cat('\n')
+    
+    # t<-svychisq(as.formula(paste0("~", v,".fr","+ cntry.fr")), ess.s)
+    # 
+    # print(t$method)
+    # cat('\n')
+    # print(c(round(c(t$statistic,t$parameter[1], t$p.value),3)))
+    
+  cat('\n')
+  
+  ################################################################################################
+  }
+}
+
+cat('\n:::')
+```
+## 5. Further descriptives
+  
+This section presents:
+
+- Unweighted three way tables of age (two categories) and sex by whether voted at the last national elections. These are unweighted due to the small number of observations for a significant number of categories.
+
+- Plot of cross-sectional (weighted) proportions of 50+ who cast their ballot at the GE, by election year, sex and age 
+
+
+
+
+### 5.1 IVs by age, sex and whether voted at the 2019 GE
+
+::: {.panel-tabset}
+
+```{r 4way}
+#| output: asis
+
+  # Loop over each F_n in M
+for (v in bivars19) {
+  
+    fn<-paste0(v,".fr")
+    fl<-ifelse(v=="VotRec01" | v== "VotRec0",paste0(v,".fr"),paste0(v,".f"))
+  
+  cat("#### ", labs[[fl]], " \n")
+    # Use dplyr to group by AgeCat2.fr and indsex.fr
+  ess |>
+    filter(!is.na(ess$AgeCat2.fr) &  !is.na(ess[[fn]])) |>
+    group_by(AgeCat2.fr, gndr.fr) |>
+    group_split() |>
+    lapply(function(sub_ess) {
+      AgeCat2.fr_val <- as.character(unique(sub_ess$AgeCat2.fr))
+      gndr.fr_val <- as.character(unique(sub_ess$gndr.fr))
+      
+      tab <- table(sub_ess$vote.fr,sub_ess[[fn]])
+      col_totals <- colSums(tab)
+      col_perc <- prop.table(tab, 2) * 100
+      
+      # Combine count and % into one table
+      result <- matrix(paste0(tab, " (", sprintf("%.1f", col_perc), "%)"), 
+                       nrow = nrow(tab), dimnames = dimnames(tab))
+      
+      # Convert to data frame for pretty printing
+      result_df <- as.data.frame.matrix(result)
+      result_df <- cbind(FactorLevel = rownames(result_df), result_df)
+      result_df <- rbind(result_df, c("Total", as.character(col_totals)))
+      rownames(result_df)<-c(result_df$FactorLevel)
+      result_df<-result_df[,-1]
+      cat("\n **Age: **", AgeCat2.fr_val, ", **Sex: **", gndr.fr_val, " \n")
+      print(kable(result_df))
+    })
+}
+cat('\n:::')
+```
+
+
+### 5.2 Voting pattern by age, sex and general election
+
+
+ 
+
+
+## 6. Multivariate results
+
+This section presents the results of two series of stepwise logistic regression models of voter turnout at the last national elections against:
+  
+1. Socio-economic variables
+
+- Marital/relationship status
+- Household composition
+- Age
+- Education
+- Economic activity
+- (Country - only in model 6.1.7)
+
+2. Independent variables (IVs): 
+
+- Internet usage; 
+- Whether feels lonely; 
+- Self-rated general health; 
+- Number of health conditions
+- Financial situation; 
+- Happiness; 
+- Whether member of union or group; 
+- Whether a carer
+- Religious attendance
+- Intensity of social life
+- Interest in politics
+- Type of organisation worked for
+- Involvement in volunteering
+
+All models were fitted using weights.
+
+::: {.panel-tabset}
+
+
+### 6.1 Socio-economic variables & whether voted at previous GE 
+
+
+#### Stepwise models
+```{r 6.1}
+#| output: asis
+
+
+# ess$dimarr.fr<-relevel(ess$dimarr.fr,ref=2)
+# ess$tenureb.fr<-relevel(ess$tenureb.fr,ref=2)
+# ess$edqual.fr<-relevel(ess$edqual.fr,ref=4)
+ ess$mnactic.fr<-relevel(ess$mnactic.fr,ref=5)
+ ess$cntry.fr<-relevel(ess$cntry.fr,ref=10)
+ ess$tporgwk.fr<-relevel(ess$tporgwk.fr,ref=4)
+ ess$hswrk.fr<-relevel(ess$hswrk.fr,ref=2)
+ ess$mbtru.fr<-relevel(ess$mbtru.fr,ref=3)
+ ess$rlgatnd.fr<-relevel(ess$rlgatnd.fr,ref=3)
+ ess$fltlnl.fr<-relevel(ess$fltlnl.fr,ref=2)
+ ess$hincfel.fr<-relevel(ess$hincfel.fr,ref=2)
+ ess$health.fr<-relevel(ess$health.fr,ref=3)
+ ess$hhdtypb.fr<-relevel(ess$hhdtypb.fr,ref=5)
+
+# ess$AgeCat3.fr<-relevel(ess$AgeCat3.fr,ref=1)
+
+
+ess.r<-ess |> 
+  select(vote.fr,anweight,all_of(regvars1))|> 
+  na.exclude()
+
+#ess.r$vote.fr<-as.numeric(as.factor(ess.r$vote.fr=="Did not vote"))-1
+regs1<-list()
+tmpR<-list()
+
+for(mod in 1:(length(regvars1))){
+
+frm<-as.formula(paste0("vote.fr ~ ",paste0(regvars1[c(1:(mod))],collapse="+")))
+
+tmpR[[paste0("a1",mod)]]<-glm(
+                  formula=frm,
+                   weights=anweight,
+                   data=ess.r,
+                   family=binomial()) |>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab1,
+                 tidy_fun = broom.helpers::tidy_parameters,
+                 exponentiate = TRUE, 
+                 digits=1,
+                 include = regvars1[1:(mod)]) 
+
+  regs1[[paste0("a1",mod)]] <- tmpR[[paste0("a1",mod)]] |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+}  
+  
+
+
+MS1<-tbl_merge(tbls=regs1,
+              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", 
+                               "**M5**","**M6**","**M7**")) |>
+    modify_table_body(~.x |>
+                          dplyr::arrange(match(var_label,
+                                               c(as.character(reglab1),"AIC", "logLik", "nobs" ))))
+
+
+MS1
+
+```
+
+#### Coefficient plot of Models 6         
+
+```{r plot_6.1}
+#| fig-width: 12
+#| fig-height: 10
+
+tmpR[["a16"]] |>plot()
+
+```
+
+
+
+
+### 6.2 SEV + IVS
+  
+#### Stepwise models
+```{r 6.2}
+ess.r<-ess |> 
+  select(vote.fr,anweight,all_of(regvars2))|> 
+  na.exclude()
+
+regs2<-list()
+tmpR<-list()
+
+for(mod in 1:(length(regvars2)-6)){
+
+frm<-as.formula(paste0("vote.fr ~ ",paste0(regvars2[c(1:(6+mod))],collapse="+")))
+
+tmpR[[paste0("a1",mod)]]<-glm(
+                  formula=frm,
+                   weights=anweight,
+                   data=ess.r,
+                   family=binomial()) |>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab2,
+                 tidy_fun = broom.helpers::tidy_parameters,
+                 exponentiate = TRUE, 
+                 digits=1,
+                 include = regvars2[c(7:(6+mod))]) 
+
+regs2[[paste0("a1",mod)]] <-tmpR[[paste0("a1",mod)]]|>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+}  
+
+
+MS2<-tbl_merge(tbls=regs2,
+              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", 
+                               "**M5**", "**M6**", "**M7**", "**M8**", 
+                               "**M9**","**M10**","**M11**","**M12**","**M12**"))  |>
+     modify_table_body(~.x |>
+                      dplyr::arrange(match(var_label,
+                                               c(as.character(reglab2),"AIC", "logLik", "nobs" ))))
+
+
+MS2
+```
+
+#### Coefficient plots of model 12
+
+```{r plot_6.2}
+#| fig-width: 12
+#| fig-height: 10
+
+tmpR[["a113"]] |>plot()
+```
+:::
+
+## Document version history
+
+Initial version
+### *Changes from version 8*
+
+-
+
+#### *To do*:
+
+1. Check if control for simplified country blocks hass an impact;
+2. Improve landing page.
+  

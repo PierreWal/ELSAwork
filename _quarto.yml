@@ -1,0 +1,61 @@
+project:
+  type: website
+  output-dir: docs
+  title: "ELSA/BES/ESS voting patterns study Exploratory analysis  - draft version 9"
+  render:
+    - index.qmd
+    - ELSA.qmd
+    - BES.qmd
+    - ESS.qmd
+
+website:  
+ sidebar:
+     title: "Content"
+     style: "floating"
+     contents:
+      - text: "Introduction"
+        href: index.qmd
+      - text: "ELSA"
+        href: ELSA.qmd
+      - text: "BES"
+        href: BES.qmd
+      - text: "ESS"
+        href: ESS.qmd
+
+#bibliography: weighting_refs.bib
+#nocite: |
+#  @*
+#jupyter: nbstata
+
+execute:
+  echo: false
+  warning: false
+  message: false
+  cache: false
+  
+
+
+
+format:
+    html: 
+      code-overflow: scroll
+      code-line-numbers: true
+      page-layout: full
+      toc: true
+      toc-location: left
+      highlight-style: arrow-light
+     # embed-resources: true
+      smooth-scroll: true
+      link-external-newwindow: true
+      citations-hover: true
+      footnotes-hover: true
+
+mainfont: "Open Sans" 
+sansfont: "Open Sans"
+monofont: "Courier New"
+monofontoptions: 'Scale=0.8'
+pdf-engine: lualatex
+
+
+
+
