@@ -44,7 +44,7 @@ format:
       toc: true
       toc-location: left
       highlight-style: arrow-light
-     # embed-resources: true
+      embed-resources: true
       smooth-scroll: true
       link-external-newwindow: true
       citations-hover: true

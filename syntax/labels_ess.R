@@ -7,9 +7,9 @@
 
 ovars<-c("vote","hincfel", "fltlnl", "gndr", "happy", "sclmeet","rlgatnd",    "mbtru"  , "hswrk",  "tporgwk", "volunfp",   "polintr",  "netusoft")
 
-exvars<-c("maritalb", "eisced", "health",  "hltprhb", "hltpral", "hltprbn", "hltprpa", "hltprpf","hltprsd", 
-          "hltprsc", "hltprsh", "hltprdi","mnactic", "cntry") 
-auxvars<-c("agea", "hhmmb","hltprhc", "hltprbp", "isco08", "rshpsts", "rshpsgb","rshipa2","rshipa3","rshipa4","rshipa5","rshipa6","rshipa7",
+exvars<-c("maritalb", "eisced", "health",  "hltphhb", "hltphal", "hltphbn", "hltphpa", "hltphpf","hltphsd", 
+          "hltphsc", "hltphsh", "hltphdi","mnactic", "cntry") 
+auxvars<-c("agea", "hhmmb","hltphhc", "hltphbp", "isco08", "rshpsts", "rshpsgb","rshipa2","rshipa3","rshipa4","rshipa5","rshipa6","rshipa7",
            "rshipa8","rshipa9","rshipa10","rshipa11","rshipa12","rshipa13")
 
 desvars<-c("psu","anweight","stratum")
@@ -31,7 +31,7 @@ reglab1<-list(AgeCat3.fr="Age",
                               cntry.fr= "Country"
               )
 
-ivars<-c("hltprhb.fr","health.fr","hincfel.fr", "fltlnl.fr", "happy.fr", "sclmeet.fr",
+ivars<-c("nrhltpb.fr","health.fr","hincfel.fr", "fltlnl.fr", "happy.fr", "sclmeet.fr",
          "rlgatnd.fr",    "mbtru.fr"  , "hswrk.fr",  "tporgwk.fr", 
          "volunfp.fr",   "polintr.fr",  "netusoft.fr")
 
@@ -43,7 +43,7 @@ reglab2<-list(AgeCat3.fr="Age",
               hhdtypb.fr="Household type",
               eisced.fr="Highest qualification",
               mnactic.fr="Economic activity",
-              hltprhb.fr="Nr of health problems",
+              nrhltpb.fr="Nr of health problems",
               health.fr="Self-rated health",
               hincfel.fr="Subj. financial situation",
               fltlnl.fr="Feels lonely?",
@@ -58,16 +58,43 @@ reglab2<-list(AgeCat3.fr="Age",
               netusoft.fr="Internet usage")
 
               
+regvars3<-c(regvars1[-7],"AgeCat3.fr:gndr.fr",ivars)
+reglab3<-list(AgeCat3.fr="Age",
+              "AgeCat3.fr:gndr.fr"="Age by sex", 
+              gndr.fr="Sex",
+              maritalb.fr="Marital/relationship status",
+              hhdtypb.fr="Household type",
+              eisced.fr="Highest qualification",
+              mnactic.fr="Economic activity",
+              nrhltpb.fr="Nr of health problems",
+              health.fr="Self-rated health",
+              hincfel.fr="Subj. financial situation",
+              fltlnl.fr="Feels lonely?",
+              happy.fr="Feels happy?",
+              sclmeet.fr="Meet friends/relatives?",
+              rlgatnd.fr="Religious attendence",    
+              mbtru.fr="Trade-union etc member?", 
+              hswrk.fr="Whether does caring/housework?",  
+              tporgwk.fr="Organisation works/worked for", 
+              volunfp.fr="Whether volunteers",   
+              polintr.fr="Interest in politics",  
+              netusoft.fr="Internet usage"
+              )
+
+regvars4<-c(regvars1[-7],"AgeCat3.fr:gndr.fr")
+reglab4<-list(AgeCat3.fr="Age",
+              "AgeCat3.fr:gndr.fr"="Age by sex", 
+              gndr.fr="Sex",
+              maritalb.fr="Marital/relationship status",
+              hhdtypb.fr="Household type",
+              eisced.fr="Highest qualification",
+              mnactic.fr="Economic activity"
+)
 
 
-exvars<-c("maritalb", "eisced", "health",  "hltprhb", "hltpral", "hltprbn", "hltprpa", "hltprpf","hltprsd", 
-          "hltprsc", "hltprsh", "hltprdi","mnactic", "cntry") 
-auxvars<-c("agea", "hhmmb","hltprhc", "hltprbp", "isco08", "rshpsts", "rshpsgb","rshipa2","rshipa3","rshipa4","rshipa5","rshipa6","rshipa7",
-           "rshipa8","rshipa9","rshipa10","rshipa11","rshipa12","rshipa13")
 
-desvars<-c("psu","anweight","stratum")
 
-dvars<-c("AgeCat2", "AgeCat3","health2", "nrhltpb", "hhdtypb", "isco1")
+
 
 
 # wvars<-c("erfvol", "ethnic", "headlba","headlbe", "hobb", "iafind","indsex", "pscedd", "pscede", "scorgpo","scorgrl", "spcar",  "VotGE01","VotGE05","VotGE15","VotGE17","VotGE19")    

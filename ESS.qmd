@@ -1,4 +1,4 @@
-# ESS voting pattern study
+# ESS voting pattern study Version 2
 
 
 ## Introduction
@@ -36,6 +36,8 @@ ess<-ess.raw |>filter(!cntry=="TR" & !cntry=="RU" & !cntry=="IL" & agea>50) |>
                select(all_of(c(ovars,exvars,auxvars,desvars)))
 
 #######################################################################```
+```
+
 
 
 ```{r recode}
@@ -44,7 +46,7 @@ source("syntax/recoding_ess.R")
 
 
 
-## 1. Variables included
+## 1. Variables included 
 
 |Description|Name|Variable label|Valid responses [^2]|
 |----|-----------|------------------------------------|-----------:
@@ -67,15 +69,15 @@ Age 3 categories  | AgeCat3    | `{r} labs[["AgeCat3.f"]]` |`{r} prettyNum(as.nu
 `{r} labs[["eisced.f"]]`  | eisced    | `{r} attr(ess$eisced,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$eisced.fr)))[1],big.mark = ",")` 
 `{r} labs[["health.f"]]`  | health    | `{r} attr(ess$health,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$health.fr)))[1],big.mark = ",")`
 `{r} labs[["health2.f"]]`  | health2    | `{r} attr(ess$health2,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$health2.fr)))[1],big.mark = ",")` 
-`{r} labs[["hltprhb.f"]]`  | hltprhb    | `{r} attr(ess$hltprhb,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprhb.fr)))[1],big.mark = ",")` 
-`{r} labs[["hltpral.f"]]`  | hltpral    | `{r} attr(ess$hltpral,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltpral.fr)))[1],big.mark = ",")` 
-`{r} labs[["hltprbn.f"]]`  | hltprbn    | `{r} attr(ess$hltprbn,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprbn.fr)))[1],big.mark = ",")`
-`{r} labs[["hltprpa.f"]]`  | hltprpa    | `{r} attr(ess$hltprpa,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprpa.fr)))[1],big.mark = ",")` 
-`{r} labs[["hltprpf.f"]]`  | hltprpf    | `{r} attr(ess$hltprpf,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprpf.fr)))[1],big.mark = ",")` 
-`{r} labs[["hltprsd.f"]]`  | hltprsd    | `{r} attr(ess$hltprsd,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprsd.fr)))[1],big.mark = ",")`
-`{r} labs[["hltprsc.f"]]`  | hltprsc    | `{r} attr(ess$hltprsc,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprsc.fr)))[1],big.mark = ",")` 
-`{r} labs[["hltprsh.f"]]`  | hltprsh    | `{r} attr(ess$hltprsh,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprsh.fr)))[1],big.mark = ",")` 
-`{r} labs[["hltprdi.f"]]`  | hltprdi    | `{r} attr(ess$hltprdi,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltprdi.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltphhb.f"]]`  | hltphhb    | `{r} attr(ess$hltphhb,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltphhb.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltphal.f"]]`  | hltphal    | `{r} attr(ess$hltphal,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltphal.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltphbn.f"]]`  | hltphbn    | `{r} attr(ess$hltphbn,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltphbn.fr)))[1],big.mark = ",")`
+`{r} labs[["hltphpa.f"]]`  | hltphpa    | `{r} attr(ess$hltphpa,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltphpa.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltphpf.f"]]`  | hltphpf    | `{r} attr(ess$hltphpf,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltphpf.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltphsd.f"]]`  | hltphsd    | `{r} attr(ess$hltphsd,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltphsd.fr)))[1],big.mark = ",")`
+`{r} labs[["hltphsc.f"]]`  | hltphsc    | `{r} attr(ess$hltphsc,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltphsc.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltphsh.f"]]`  | hltphsh    | `{r} attr(ess$hltphsh,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltphsh.fr)))[1],big.mark = ",")` 
+`{r} labs[["hltphdi.f"]]`  | hltphdi    | `{r} attr(ess$hltphdi,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hltphdi.fr)))[1],big.mark = ",")` 
 `{r} labs[["nrhltpb.f"]]`  | nrhltpb    | `{r} attr(ess$nrhltpb,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$nrhltpb.fr)))[1],big.mark = ",")`
 `{r} labs[["hhdtypb.f"]]`  | hhdtypb    | `{r} attr(ess$hhdtypb,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$hhdtypb.fr)))[1],big.mark = ",")` 
 `{r} labs[["isco1.f"]]`  | isco1    | `{r} attr(ess$isco1,"label")` |`{r} prettyNum(as.numeric(table(is.na(ess$isco1.fr)))[1],big.mark = ",")` 
@@ -457,9 +459,9 @@ All models were fitted using weights.
 #| output: asis
 
 
-# ess$dimarr.fr<-relevel(ess$dimarr.fr,ref=2)
+ ess$maritalb.fr<-relevel(ess$maritalb.fr,ref=2)
 # ess$tenureb.fr<-relevel(ess$tenureb.fr,ref=2)
-# ess$edqual.fr<-relevel(ess$edqual.fr,ref=4)
+ ess$eisced.fr<-relevel(ess$eisced.fr,ref=4)
  ess$mnactic.fr<-relevel(ess$mnactic.fr,ref=5)
  ess$cntry.fr<-relevel(ess$cntry.fr,ref=10)
  ess$tporgwk.fr<-relevel(ess$tporgwk.fr,ref=4)
@@ -470,6 +472,7 @@ All models were fitted using weights.
  ess$hincfel.fr<-relevel(ess$hincfel.fr,ref=2)
  ess$health.fr<-relevel(ess$health.fr,ref=3)
  ess$hhdtypb.fr<-relevel(ess$hhdtypb.fr,ref=5)
+ ess$nrhltpb.fr<-relevel(ess$nrhltpb.fr,ref=3)
 
 # ess$AgeCat3.fr<-relevel(ess$AgeCat3.fr,ref=1)
 
@@ -481,6 +484,7 @@ ess.r<-ess |>
 #ess.r$vote.fr<-as.numeric(as.factor(ess.r$vote.fr=="Did not vote"))-1
 regs1<-list()
 tmpR<-list()
+
 
 for(mod in 1:(length(regvars1))){
 
@@ -584,14 +588,143 @@ MS2
 
 tmpR[["a113"]] |>plot()
 ```
+
+
+### 6.3 SEV + IVS + interactions
+  
+#### Stepwise models
+```{r 6.3}
+ess.r<-ess |> 
+  select(vote.fr,anweight,all_of(regvars2))|> 
+  na.exclude()
+
+regs3<-list()
+tmpR<-list()
+
+
+
+for(mod in 1:(length(regvars3)-7)){
+
+frm<-as.formula(paste0("vote.fr ~ ",paste0(regvars3[c(1:(7+mod))],collapse="+")))
+
+tmpR[[paste0("a3",mod)]]<-glm(
+                  formula=frm,
+                   weights=anweight,
+                   data=ess.r,
+                   family=binomial()) |>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab3,
+                 tidy_fun = broom.helpers::tidy_parameters,
+                 exponentiate = TRUE, 
+                 digits=1,
+                 include = regvars3[c(1,7:(7+mod))]) 
+
+regs3[[paste0("a3",mod)]] <-tmpR[[paste0("a3",mod)]]|>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+
+}  
+
+
+MS3<-tbl_merge(tbls=regs3,
+              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", 
+                               "**M5**", "**M6**", "**M7**", "**M8**", 
+                               "**M9**","**M10**","**M11**","**M12**","**M13**"))  |>
+     modify_table_body(~.x |>
+                      dplyr::arrange(match(var_label,
+                                               c(as.character(reglab3),"AIC", "logLik", "nobs" ))))
+
+
+MS3
+```
+
+#### Coefficient plots of model 13
+
+```{r plot_6.3}
+#| fig-width: 12
+#| fig-height: 10
+
+tmpR[["a313"]] |>plot()
+```
+
+
+### 6.4 SEV & interaction 
+
+
+#### Stepwise models
+```{r 6.4}
+#| output: asis
+
+
+ess.r<-ess |> 
+  select(vote.fr,anweight,all_of(regvars1))|> 
+  na.exclude()
+
+#ess.r$vote.fr<-as.numeric(as.factor(ess.r$vote.fr=="Did not vote"))-1
+regs4<-list()
+tmpR<-list()
+
+
+for(mod in 1:(length(regvars4))){
+
+frm<-as.formula(paste0("vote.fr ~ ",paste0(regvars4[c(1:(mod))],collapse="+")))
+
+tmpR[[paste0("a4",mod)]]<-glm(
+                  formula=frm,
+                   weights=anweight,
+                   data=ess.r,
+                   family=binomial()) |>  
+                   tbl_regression(ci_method="wald",
+                   label = reglab4,
+                 tidy_fun = broom.helpers::tidy_parameters,
+                 exponentiate = TRUE, 
+                 digits=1,
+                 include = regvars4[1:(mod)]) 
+
+  regs4[[paste0("a4",mod)]] <- tmpR[[paste0("a4",mod)]] |>
+  add_glance_table(include=c(AIC,logLik,nobs)) |> 
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T) 
+}  
+  
+
+
+MS4<-tbl_merge(tbls=regs4,
+              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", 
+                               "**M5**","**M6**","**M7**")) |>
+    modify_table_body(~.x |>
+                          dplyr::arrange(match(var_label,
+                                               c(as.character(reglab4),"AIC", "logLik", "nobs" ))))
+
+
+MS4
+
+```
+
+#### Coefficient plot of Models 6         
+
+```{r plot_6.4}
+#| fig-width: 12
+#| fig-height: 10
+
+tmpR[["a46"]] |>plot()
+
+```
+
 :::
 
 ## Document version history
 
-Initial version
-### *Changes from version 8*
 
--
+Version 2:
+
+- Amended reference categories for marital status and education in regression tables to match those fromn ELSA
+- Changed health problems mention to impairing health problems mentioned
+- Added two regression tables with the interaction between Age 3 categories and sex included 
+
+Initial version
+
+
+
 
 #### *To do*:
 
