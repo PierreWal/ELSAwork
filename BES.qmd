@@ -146,8 +146,14 @@ attr(b23$indsex, "label")<-"Sex"
   
 #res.voted1<-grep("voted",vlab23,fixed=TRUE,value=T)  -->
 ```
+### *Changes from version 2*
+1. Corrected a layout issue with Table 1
+2. Added Perceived risk of poverty, General trust and overall happiness in the descriptive analysis
+3. Added Perceived risk of poverty and  General trust in the regression models
+
+
 ### *Changes from version 1*
- 1. Match recoding of variables with ELSA where possible
+1. Match recoding of variables with ELSA where possible
 
 2. Renamed variables to match ELSA.
 
@@ -157,7 +163,7 @@ attr(b23$indsex, "label")<-"Sex"
 
 5. Amended reference categories of variables.
 
-6. Amended display of regression tables, wtih previous vote at bottom of table.
+6. Amended display of regression tables, withh previous vote at bottom of table.
 
 
 #### *To do*:
@@ -170,7 +176,7 @@ attr(b23$indsex, "label")<-"Sex"
 
 ## 1. Introduction
 This document presents the  results of an  analysis of the 2019 British Election Study Wave 23 that focuses on  turnout at the 2019 General Election among the 50+, looking at socio-demographic factors and past voter turnout, including at the 2005, 2010, 2015,2017 General Elections. 
-This study aims to reproduce a similar analysis conducted with  English Longitudinal Study of Ageing Wave 10 data.
+This study aims to reproduce the  analysis conducted with  English Longitudinal Study of Ageing Wave 10 and ELSA data in this document.
 
 ## 2. Methods
 ### Sample
@@ -188,12 +194,13 @@ Below is the list  of the original variables considered for the analysis.
 |----|-----------|------------------------------------:
 p_turnout_2019|Whether voted - 2019 GE|2019 GE turnout                   
 age|Age|Age of respondent|  
+genTrust|Trust|Dealing with people: generally trust or generally careful,
 indsex|Sex of respondent|Sex
+lifeHappy|Happiness|Life happy scale 
 p_disability|Whether disabled| Are your day-to-day activities limited because of a health problem or disabilit
 p_education|Education| Education qualification (highest attained)
 p_ethnicity|Ethnicity|To which of these groups do you consider you belong?
 p_hh_children|Number of <18| How many of the people in your household are under 18?
-<!-- p_hh_size|Household size| How many people, including yourself, are there in your household?   -->
 p_job_sector|Broad industry|What kind of organisation do you work for?  
 p_marital|Marital/relationship status| What is your current marital or relationship status?
 p_religion|Religious belonging| Do you regard yourself as belonging to any particular religion, and if so, to w 
@@ -204,9 +211,12 @@ p_turnout_2015|Whether voted - 2015 GE|2015 turnout (earliest recorded)
 p_turnout_2017|Whether voted - 2017 GE|2017 GE turnout                   
 p_work_stat|Econ acti/employment status | Which of these applies to you?  
 preschoolKidsInHouseW21_|Whether under 6 in the HH| in the Cares for pre-school age children          
+riskPoverty|Risk of poverty|Risk of poverty: times when won't have enough money 
 schoolKidsInHouseW21_|Whether 6-16 in the HH|Cares for school age children
 sickElderlyInHouseW21_|Whether care for adults|Cares for sick, disabled or elderly adults
 wt|Cross-sectional weight|New Weight Wave 23
+<!-- p_hh_size|Household size| How many people, including yourself, are there in your household?   -->
+
 ------------------------------------------------------------------------------------------
 
 The following two variables are documented in the W21 dataset but are not actually  present:
@@ -240,8 +250,8 @@ source("syntax/functions.R")
 ```{r main_rec}
 bvars<-c("AgeCat2.f", "AgeCat3.f", "indsex.f") 
 ivs<-c(
-  "dimarr.f", "disab.f", "edqual.f", "ethnic.f", 
-  "hhdtypb.f",  "nssec.f","relig.f",   "VotGE05.f", 
+  "dimarr.f", "disab.f", "edqual.f", "ethnic.f","genTrust.f", 
+   "hhdtypb.f",  "lifeHappy.fr","nssec.f","relig.f","riskPoverty.f",   "VotGE05.f", 
   "VotGE10.f", "VotGE15.f","VotGE17.f",  "VotRec0.f", "wpdes.f" 
 )
 
@@ -254,9 +264,12 @@ labs<-list(
   disab.f="Whether daily life limited",
   edqual.f="Highest qualification",
   ethnic.f="Ethnicity",
+  genTrust.f="Trust in other people",
   hhdtypb.f="Household type",
+  lifeHappy.f="Happiness",
   nssec.f="Social class",
   relig.f="Whether religious",
+  riskPoverty.f="Whether at risk or poverty",
   VotGE05.f="Whether voted (GE 2005)",
   VotGE10.f="Whether voted (GE 2010)",
   VotGE15.f="Whether voted (GE 2015)",
@@ -321,6 +334,7 @@ b23<-b23|>mutate(
                    "A lot" = "Yes, limited a lot", 
                     "A little" = "Yes, limited a little", 
                    "No"="No"),
+  
     hhdtypb.f=as.factor(case_when(
     p_hh_size == 1 ~ "Single person HH",
     p_hh_size == 2 & p_hh_children == 1 ~ "Two adults HH",
@@ -328,6 +342,7 @@ b23<-b23|>mutate(
     p_hh_size > 2 & p_hh_children == 1 ~ "3+ adults HH",
     .default =   "Other"
   )),
+  genTrust.f=as_factor(genTrust,"both"),
   nssec.f=as.factor(case_when(
     ns_sec_analytic %in% c(11,12) ~ "Higher P&MS",
     ns_sec_analytic == 20  ~ "Lower  P&MS",
@@ -336,8 +351,15 @@ b23<-b23|>mutate(
     ns_sec_analytic %in% c(60,70) ~ "Routine/semi-routine",
     .default =   "Other"
   )),
+  lifeHappy.f=addNA(lifeHappy, ifany = FALSE),
+  lifeHappy.fr=as.factor(case_when(lifeHappy<5 ~ "1st quartile - least happy",
+                               lifeHappy== 5 | lifeHappy==6 ~ "2nd qtile",
+                               lifeHappy== 7 | lifeHappy== 8   ~ "3rd qtile",
+                               lifeHappy== 9 | lifeHappy==10  ~ "4th qtile")),
   relig.f = as.factor(if_else(p_religion == 1, "Religious","Not religious")),
-  
+  riskPoverty.f=as.factor(case_when(riskPoverty==1 | riskPoverty==2 ~ "At risk",
+                          riskPoverty==3 ~ "Neither",
+                          riskPoverty==4 | riskPoverty==5 ~ "Not at risk")),
   # srh4=as.factor(case_when(
   #   hehelf==1  | hehelf==2 ~ "Excel/V. good",
   #   hehelf==3 ~ "Good",
@@ -390,6 +412,8 @@ attr(b23$dimarr.f,"label")<-labs[["dimarr.f"]]
 attr(b23$edqual.f,"label")<-labs[["edqual.f"]]
 attr(b23$wpdes.f,"label")<-labs[["wpdes.f"]]
 attr(b23$VotRec0.f,"label")<-labs[["VotRec0.f"]]
+attr(b23$genTrust.f,"label")<-labs[["genTrust.f"]]
+attr(b23$riskPoverty.f,"label")<-labs[["riskPoverty.f"]]
 
 levels(b23$nssec.f)<-c("Higher managerial","Higher professional","Lower P&M","Intermediate occupations",                                
                     "Small employers / own account", "Lower supervisory/technical","Semi-routine occupations",
@@ -781,8 +805,10 @@ All models were fitted using weights.
  b23$VotRec0.f<-relevel(as.factor(b23$VotRec0.f),ref=3)
 
 
-b23.r<-b23 |>filter(!is.na(indsex.f) & !is.na(AgeCat3.f) & !is.na(hhdtypb.f) & !is.na(dimarr.f) &
-                    !is.na(edqual.f)& !is.na(wpdes.f) & !is.na(VotRec0.f) & !is.na(wt) & !is.na(VotGE19.f))
+b23.r<-b23 |> select(VotRec0.f,indsex.f, AgeCat3.f, hhdtypb.f, dimarr.f, edqual.f, 
+                     wpdes.f, disab.f,relig.f, nssec.f, ethnic.f, wt, VotGE19.f,
+                     riskPoverty.f, genTrust.f,wt)|>
+               na.exclude()
 
 regs1<-list()
 
@@ -895,8 +921,10 @@ tmp18 |>plot()
 ```{r multiv_w.w}
 #| output: asis
 
-b23.r<-b23 |>filter(!is.na(indsex.f) & !is.na(AgeCat3.f) & !is.na(hhdtypb.f) & !is.na(dimarr.f) &
-                          !is.na(edqual.f)& !is.na(wpdes.f)  & !is.na(wt) & !is.na(VotGE19.f )) 
+b23.r<-b23 |> select(indsex.f, AgeCat3.f, hhdtypb.f, dimarr.f, edqual.f, 
+                     wpdes.f, disab.f,relig.f, nssec.f, ethnic.f, wt, VotGE19.f,
+                     riskPoverty.f, genTrust.f,wt)|>
+               na.exclude()
 
 regs2<-list()
 
@@ -1016,9 +1044,10 @@ tmp18 |>plot()
 ```{r extrav}
 #| output: asis
 
-b23.r<-b23 |>filter(!is.na(indsex.f) & !is.na(AgeCat3.f) & !is.na(hhdtypb.f) & !is.na(dimarr.f) &
-                          !is.na(edqual.f)& !is.na(wpdes.f) & !is.na(disab.f) &
-                          !is.na(relig.f)& !is.na(nssec.f)& !is.na(ethnic.f) & !is.na(wt) & !is.na(VotGE19.f ))
+b23.r<-b23 |> select(indsex.f, AgeCat3.f, hhdtypb.f, dimarr.f, edqual.f, 
+                     wpdes.f, disab.f,relig.f, nssec.f, ethnic.f, wt, VotGE19.f,
+                     riskPoverty.f, genTrust.f,wt)|>
+               na.exclude()
 
 regs3<-list()
 
@@ -1079,25 +1108,39 @@ regs3[["a14"]]<-tmp14|>  add_glance_table(include=c(AIC,logLik,nobs)) |>
 
 
 tmp15<-glm(VotGE19.f ~
-                     indsex.f*AgeCat3.f+hhdtypb.f+dimarr.f+edqual.f+wpdes.f+
-                     +disab.f+ethnic.f+relig.f+nssec.f,
+                     indsex.f+AgeCat3.f+hhdtypb.f+dimarr.f+edqual.f+wpdes.f+
+                     +disab.f+ethnic.f+relig.f+nssec.f+riskPoverty.f,
                    weights=wt,b23.r,family=binomial())|>
   tbl_regression(exponentiate = T,
                  digits=1,
-                 include = c("disab.f","ethnic.f", "relig.f", "nssec.f","indsex.f:AgeCat3.f"),
+                 include = c("disab.f","ethnic.f", "relig.f", "nssec.f","riskPoverty.f"),
                                   ci_method="wald",
                  tidy_fun = broom.helpers::tidy_parameters)  
 
-regs3[["a15"]]<-tmp14|>  add_glance_table(include=c(AIC,logLik,nobs)) |>
+regs3[["a15"]]<-tmp15|>  
+  add_glance_table(include=c(AIC,logLik,nobs)) |>
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T)
+
+tmp16<-glm(VotGE19.f ~
+                     indsex.f*AgeCat3.f+hhdtypb.f+dimarr.f+edqual.f+wpdes.f+
+                     +disab.f+ethnic.f+relig.f+nssec.f+riskPoverty.f+genTrust.f,
+                   weights=wt,b23.r,family=binomial())|>
+  tbl_regression(exponentiate = T,
+                 digits=1,
+                 include = c("disab.f","ethnic.f", "relig.f", "nssec.f",                             "riskPoverty.f","genTrust.f","indsex.f:AgeCat3.f"),
+                                  ci_method="wald",
+                 tidy_fun = broom.helpers::tidy_parameters)  
+
+regs3[["a16"]]<-tmp16|>  add_glance_table(include=c(AIC,logLik,nobs)) |>
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T)
 
 
 
 MS3<-tbl_merge(tbls=regs3,
-              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**")) |>
+              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**")) |>
     modify_table_body(~.x |>
                           dplyr::arrange(match(variable,
-                                               c("disab.f","ethnic.f", "relig.f", "nssec.f","indsex.f:AgeCat3.f","AIC", "logLik", "nobs" ))))
+                                               c("disab.f","ethnic.f", "relig.f", "nssec.f","riskPoverty.f","genTrust.f","indsex.f:AgeCat3.f","AIC", "logLik", "nobs" ))))
 
 MS3
 
@@ -1117,9 +1160,10 @@ tmp14 |>plot()
 
 
 ```{r lastreg}
-b23.r<-b23 |>filter(!is.na(indsex.f) & !is.na(AgeCat3.f) & !is.na(hhdtypb.f) & !is.na(dimarr.f) &
-                      !is.na(edqual.f)& !is.na(wpdes.f) & !is.na(disab.f) &
-                      !is.na(relig.f)& !is.na(nssec.f)& !is.na(ethnic.f) & !is.na(wt) & !is.na(VotGE19.f ))
+b23.r<-b23 |> select(VotRec0.f,indsex.f, AgeCat3.f, hhdtypb.f, dimarr.f, edqual.f, 
+                     wpdes.f, disab.f,relig.f, nssec.f, ethnic.f, wt, VotGE19.f,
+                     riskPoverty.f, genTrust.f,wt)|>
+               na.exclude()
 
 
 regs4<-list()
@@ -1177,38 +1221,63 @@ regs4[["a14"]]<-glm(VotGE19.f ~
 
 
 tmp15<-glm(VotGE19.f ~VotRec0.f+
-             indsex.f*AgeCat3.f+hhdtypb.f+dimarr.f+edqual.f+wpdes.f+
-             +disab.f+ethnic.f+relig.f+nssec.f,
+             indsex.f+AgeCat3.f+hhdtypb.f+dimarr.f+edqual.f+wpdes.f+
+             +disab.f+ethnic.f+relig.f+nssec.f+riskPoverty.f,
            weights=wt,b23.r,family=binomial())|>
   tbl_regression(exponentiate = T,
                  digits=1,
-                 include = c("disab.f","ethnic.f", "relig.f", "nssec.f", "VotRec0.f"),
+                 include = c("disab.f","ethnic.f", "relig.f", "nssec.f","riskPoverty.f", "VotRec0.f"),
                  ci_method="wald",
                  tidy_fun = broom.helpers::tidy_parameters)  
-
 
 regs4[["a15"]]<-tmp15|>  add_glance_table(include=c(AIC,logLik,nobs)) |>
   add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T)
 
+tmp16<-glm(VotGE19.f ~VotRec0.f+
+             indsex.f+AgeCat3.f+hhdtypb.f+dimarr.f+edqual.f+wpdes.f+
+             +disab.f+ethnic.f+relig.f+nssec.f+riskPoverty.f+genTrust.f,
+           weights=wt,b23.r,family=binomial())|>
+  tbl_regression(exponentiate = T,
+                 digits=1,
+                 include = c("disab.f","ethnic.f", "relig.f", "nssec.f","riskPoverty.f", "genTrust.f", "VotRec0.f"),
+                 ci_method="wald",
+                 tidy_fun = broom.helpers::tidy_parameters)  
 
+regs4[["a16"]]<-tmp16|>  add_glance_table(include=c(AIC,logLik,nobs)) |>
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T)
+
+tmp17<-glm(VotGE19.f ~VotRec0.f+
+             indsex.f+AgeCat3.f+hhdtypb.f+dimarr.f+edqual.f+wpdes.f+
+             +disab.f+ethnic.f+relig.f+nssec.f+riskPoverty.f+genTrust.f+indsex.f:AgeCat3.f,
+           weights=wt,b23.r,family=binomial())|>
+  tbl_regression(exponentiate = T,
+                 digits=1,
+                 include = c("disab.f","ethnic.f", "relig.f", "nssec.f","riskPoverty.f", "genTrust.f","indsex.f:AgeCat3.f", "VotRec0.f"),
+                 ci_method="wald",
+                 tidy_fun = broom.helpers::tidy_parameters)  
+
+regs4[["a17"]]<-tmp17|>  add_glance_table(include=c(AIC,logLik,nobs)) |>
+  add_significance_stars(hide_ci = F, hide_p = TRUE, hide_se = T)
 
 
 MS4<-tbl_merge(tbls=regs4,
-              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**")) |>
+              tab_spanner = c("**M1**", "**M2**", "**M3**", "**M4**", "**M5**", "**M6**", "**M7**")) |>
     modify_table_body(~.x |>
                           dplyr::arrange(match(variable,
-                             c("disab.f","ethnic.f", "relig.f", "nssec.f","indsex.f*AgeCat3.f", "VotRec0.f","AIC", "logLik", "nobs" ))))
+                             c("disab.f","ethnic.f", "relig.f", "nssec.f","riskPoverty.f", "genTrust.f","indsex.f:AgeCat3.f", "VotRec0.f","AIC", "logLik", "nobs" ))))
 
 MS4
 
 ```
 
-#### Coefficients plot of Model 4
+#### Coefficients plot of Models 16 & 17
 
 ```{r plot_extrav2}
 #| fig-width: 12
 #| fig-height: 10
-tmp15 |>plot()
+
+tmp16 |>plot()
+tmp17 |>plot()
 
 ```
 

@@ -655,7 +655,6 @@ tmpR[["a313"]] |>plot()
 ```{r 6.4}
 #| output: asis
 
-
 ess.r<-ess |> 
   select(vote.fr,anweight,all_of(regvars1))|> 
   na.exclude()
