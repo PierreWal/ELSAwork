@@ -7,6 +7,8 @@ project:
     - ELSA.qmd
     - BES.qmd
     - ESS.qmd
+    - ESS_uk.qmd
+
 
 website:  
  sidebar:
@@ -21,6 +23,8 @@ website:
         href: BES.qmd
       - text: "ESS"
         href: ESS.qmd
+      - text: "ESS - UK only"
+        href: ESS_uk.qmd
 
 #bibliography: weighting_refs.bib
 #nocite: |

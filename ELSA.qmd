@@ -1,4 +1,4 @@
-# ELSA voting pattern study
+# ELSA voting pattern study - version 7
 
 
 ## Introduction
@@ -39,7 +39,7 @@ dvars<-c("AgeCat2.fr", "AgeCat3.fr","VotRec2.fr","VotRec0.fr","VotRec01.fr")
 uvars<-paste0(c(ovars,exvars),".f")
 rvars<-paste0(c(ovars,exvars),".fr")
 
-bivars19<-c("AgeCat2","AgeCat3", "AgeGap31", "AgeGap32", "cfmap2", "cfmap3", "cfmetm2", "cfmetm3","digran", "dimarr", "edqual", "erfvol", "erlvolba","erlvolpe","ethnic", "exlo90d", "exrela", "headlba","headlbe","hehelf2","hehelf3", "hhdtypb","hobb","iafcon", "iafind","indsex", "pscedd", "pscede", "sclfcoa",  "scorgch","scorgpo","scorgrl","spcar",  "sptraa", "tenureb","VotGE01","VotGE05","VotGE15","VotGE17","VotRec2","VotRec0","VotRec01","w10nssec5","wpdes")     
+# bivars19<-c("AgeCat2","AgeCat3", "AgeGap31", "AgeGap32", "cfmap2", "cfmap3", "cfmetm2", "cfmetm3","digran", "dimarr", "edqual", "erfvol", "erlvolba","erlvolpe","ethnic", "exlo90d", "exrela", "headlba","headlbe","hehelf2","hehelf3", "hhdtypb","hobb","iafcon", "iafind","indsex", "pscedd", "pscede", "sclfcoa",  "scorgch","scorgpo","scorgrl","spcar",  "sptraa", "tenureb","VotGE01","VotGE05","VotGE15","VotGE17","VotRec2","VotRec0","VotRec01","w10nssec5","wpdes")     
 
 reglab1<-list(AgeCat3.fr="Age",
                               indsex.fr="Sex", 
@@ -465,30 +465,32 @@ for (v in bivars19[-c(1,2)]) {
     fl<-ifelse(v=="VotRec01" | v== "VotRec0",paste0(v,".fr"),paste0(v,".f"))
   
   cat("#### ", labs[[fl]], " \n")
-    # Use dplyr to group by AgeCat2.fr and indsex.fr
+    # Use dplyr to group by AgeCat3.fr and indsex.fr
   elsaw |>
-    filter(!is.na(elsaw$AgeCat2.fr) &  !is.na(elsaw[[fn]])) |>
-    group_by(AgeCat2.fr, indsex.fr) |>
+    filter(!is.na(elsaw$AgeCat3.fr) &  !is.na(elsaw[[fn]])) |>
+    group_by(AgeCat3.fr, indsex.fr) |>
     group_split() |>
     lapply(function(sub_elsaw) {
-      AgeCat2.fr_val <- as.character(unique(sub_elsaw$AgeCat2.fr))
+      AgeCat3.fr_val <- as.character(unique(sub_elsaw$AgeCat3.fr))
       indsex.fr_val <- as.character(unique(sub_elsaw$indsex.fr))
       
       tab <- table(sub_elsaw$VotGE19.fr,sub_elsaw[[fn]])
       col_totals <- colSums(tab)
+      row_totals <- rowSums(tab)
       col_perc <- prop.table(tab, 2) * 100
-      
-      # Combine count and % into one table
-      result <- matrix(paste0(tab, " (", sprintf("%.1f", col_perc), "%)"), 
+      row_perc <- prop.table(tab, 1) * 100
+
+            # Combine count and % into one table
+      result <- matrix(paste0(tab, " (", sprintf("%.1f", row_perc), "%)"), 
                        nrow = nrow(tab), dimnames = dimnames(tab))
       
       # Convert to data frame for pretty printing
       result_df <- as.data.frame.matrix(result)
       result_df <- cbind(FactorLevel = rownames(result_df), result_df)
-      result_df <- rbind(result_df, c("Total", as.character(col_totals)))
+      result_df <- rbind(result_df, c("Total", as.character(row_totals)))
       rownames(result_df)<-c(result_df$FactorLevel)
       result_df<-result_df[,-1]
-      cat("\n **Age: **", AgeCat2.fr_val, ", **Sex: **", indsex.fr_val, " \n")
+      cat("\n **Age: **", AgeCat3.fr_val, ", **Sex: **", indsex.fr_val, " \n")
       print(kable(result_df))
     })
 }
@@ -1187,6 +1189,10 @@ Added 4 series of models without past voting behaviour as covariate.
 DIGRAN (presence of granchildren) was not added to the regression models due to the small number of observations.
   
 <!-- 2. Meeting (60) -->
+
+
+#### *Changes from version 6*
+Changed  the order of the percentages from column to rows in Table 5.1 
 
 #### *Changes from version 5*
 
